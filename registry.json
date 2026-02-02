@@ -157,6 +157,18 @@
           "type": "registry:component"
         },
         {
+          "path": "src/components/atomic-crm/providers/sqlwebapi/index.ts",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/atomic-crm/providers/sqlwebapi/dataProvider.ts",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/atomic-crm/providers/sqlwebapi/authProvider.ts",
+          "type": "registry:component"
+        },
+        {
           "path": "src/components/atomic-crm/providers/fakerest/index.ts",
           "type": "registry:component"
         },
