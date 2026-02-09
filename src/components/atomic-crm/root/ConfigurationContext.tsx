@@ -26,6 +26,7 @@ export interface ConfigurationContextValue {
   darkModeLogo: string;
   lightModeLogo: string;
   contactGender: ContactGender[];
+  googleWorkplaceDomain?: string;
 }
 
 export interface ConfigurationProviderProps extends ConfigurationContextValue {
@@ -33,6 +34,7 @@ export interface ConfigurationProviderProps extends ConfigurationContextValue {
 }
 
 // Create context with default value
+// eslint-disable-next-line react-refresh/only-export-components
 export const ConfigurationContext = createContext<ConfigurationContextValue>({
   companySectors: defaultCompanySectors,
   dealCategories: defaultDealCategories,
@@ -58,6 +60,7 @@ export const ConfigurationProvider = ({
   taskTypes,
   title,
   contactGender,
+  googleWorkplaceDomain,
 }: ConfigurationProviderProps) => (
   <ConfigurationContext.Provider
     value={{
@@ -71,10 +74,12 @@ export const ConfigurationProvider = ({
       title,
       taskTypes,
       contactGender,
+      googleWorkplaceDomain,
     }}
   >
     {children}
   </ConfigurationContext.Provider>
 );
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useConfigurationContext = () => useContext(ConfigurationContext);

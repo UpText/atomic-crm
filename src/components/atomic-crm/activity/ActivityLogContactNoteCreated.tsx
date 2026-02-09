@@ -26,7 +26,7 @@ export function ActivityLogContactNoteCreated({
   return (
     <ActivityLogNote
       header={
-        <div className="flex items-center gap-2 w-full">
+        <div className="flex items-start gap-2 w-full">
           <ReferenceField
             source="contact_id"
             reference="contacts"
@@ -42,24 +42,23 @@ export function ActivityLogContactNoteCreated({
               record={activity}
             >
               <SaleName />
-            </ReferenceField>
+            </ReferenceField>{" "}
+            added a note about{" "}
             <ReferenceField
               source="contact_id"
               reference="contacts"
               record={activity.contactNote}
             >
-              &nbsp;added a note about&nbsp;
-              <TextField source="first_name" />
-              &nbsp;
-              <TextField source="last_name" />
+              <TextField source="first_name" /> <TextField source="last_name" />
             </ReferenceField>
             {context !== "company" && (
               <>
-                &nbsp;
+                {" "}
                 <RelativeDate date={activity.date} />
               </>
             )}
           </span>
+
           {context === "company" && (
             <span className="text-muted-foreground text-sm">
               <RelativeDate date={activity.date} />
