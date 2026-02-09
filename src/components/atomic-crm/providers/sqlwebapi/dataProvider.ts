@@ -25,7 +25,7 @@ import type {
 import { getActivityLog } from "../commons/activity";
 import { getCompanyAvatar } from "../commons/getCompanyAvatar";
 import { getContactAvatar } from "../commons/getContactAvatar";
-import { getIsInitialized } from "./authProvider";
+
 
 
 export const httpClient = async (
@@ -56,20 +56,21 @@ export const httpClient = async (
 };
 
 
-if (import.meta.env.VITE_SUPABASE_URL === undefined) {
+if (import.meta.env.VITE_SQLWEBAPI_URL === undefined) {
   throw new Error("Please set the VITE_SUPABASE_URL environment variable");
 }
-if (import.meta.env.VITE_SB_PUBLISHABLE_KEY === undefined) {
+if (import.meta.env.VITE_SERVICE === undefined) {
   throw new Error(
     "Please set the VITE_SB_PUBLISHABLE_KEY environment variable",
   );
 }
 
 // Use optional chaining to avoid type errors
-const swa = (window as any)?.env?.API_URL;
-const service = (window as any)?.env?.SERVICE;
+const swa = import.meta.env.VITE_SQLWEBAPI_URL ?? "";
+const service = import.meta.env.VITE_SERVICE ?? "";
 
-const baseDataProvider = simpleRestProvider(swa + service, httpClient);
+
+const baseDataProvider = simpleRestProvider(swa + "/" + service, httpClient);
 
 const processCompanyLogo = async (params: any) => {
   let logo = params.data.logo;
