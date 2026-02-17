@@ -30,7 +30,7 @@ CREATE TABLE crm.sales (
     created_at        DATETIME2(0) NOT NULL CONSTRAINT DF_sales_created_at DEFAULT (SYSUTCDATETIME()),
     updated_at        DATETIME2(0) NOT NULL CONSTRAINT DF_sales_updated_at DEFAULT (SYSUTCDATETIME()),
 
-    CONSTRAINT UQ_sales_user_id UNIQUE (user_id),
+ --   CONSTRAINT UQ_sales_user_id UNIQUE (user_id),
     CONSTRAINT UQ_sales_email UNIQUE (email)
 );
 GO

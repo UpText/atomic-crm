@@ -163,47 +163,17 @@ const dataProviderWithCustomMethods = {
     };
   },
   async salesCreate(body: SalesFormData) {
-    const { data, error } = await supabase.functions.invoke<Sale>("users", {
-      method: "POST",
-      body,
-    });
-
-    if (!data || error) {
-      console.error("salesCreate.error", error);
-      throw new Error("Failed to create account manager");
-    }
-
+    const data = await baseDataProvider.create("sales", { data: body });
     return data;
   },
+
   async salesUpdate(
     id: Identifier,
     data: Partial<Omit<SalesFormData, "password">>,
   ) {
-    const { email, first_name, last_name, administrator, avatar, disabled } =
-      data;
+       const rdata = await baseDataProvider.update("sales", { id, data });
 
-    const { data: sale, error } = await supabase.functions.invoke<Sale>(
-      "users",
-      {
-        method: "PATCH",
-        body: {
-          sales_id: id,
-          email,
-          first_name,
-          last_name,
-          administrator,
-          disabled,
-          avatar,
-        },
-      },
-    );
-
-    if (!sale || error) {
-      console.error("salesCreate.error", error);
-      throw new Error("Failed to update account manager");
-    }
-
-    return data;
+    return rdata;
   },
   async updatePassword(id: Identifier) {
     const { data: passwordUpdated, error } =
