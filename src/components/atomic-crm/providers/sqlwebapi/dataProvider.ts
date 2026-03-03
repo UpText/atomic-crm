@@ -57,7 +57,7 @@ export const httpClient = async (
 
 
 if (import.meta.env.VITE_SQLWEBAPI_URL === undefined) {
-  throw new Error("Please set the VITE_SUPABASE_URL environment variable");
+  throw new Error("Please set the VITE_SQLWEBAPI_URL environment variable");
 }
 if (import.meta.env.VITE_SERVICE === undefined) {
   throw new Error(
@@ -365,45 +365,69 @@ const applyFullTextSearch = (columns: string[]) => (params: GetListParams) => {
   };
 };
 
-const uploadToBucket = async (fi: RAFile) => {
-  if (!fi.src.startsWith("blob:") && !fi.src.startsWith("data:")) {
-    // Sign URL check if path exists in the bucket
-    if (fi.path) {
-      const { error } = await supabase.storage
-        .from("attachments")
-        .createSignedUrl(fi.path, 60);
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  let binary = "";
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
 
-      if (!error) {
-        return;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+
+  return btoa(binary);
+}
+
+// @bucket_id='test',@object_path='testpatj',@content_type='bin',@data='123',@upsert='1'
+const uploadToBucket = async (fi: RAFile) => {
+
+  const base64 = fi.rawFile
+  ? arrayBufferToBase64(await fi.rawFile.arrayBuffer())
+  : null;
+
+  if (!base64) {
+    return fi;
+  }
+
+  const res = await baseDataProvider.create("objects", 
+    { 
+      data: {
+        bucket_id: "attachments",
+        object_path: fi.rawFile.name,
+        content_type: fi.rawFile.type,
+        data: base64 
       }
     }
-  }
+  );
 
-  const dataContent = fi.src
-    ? await fetch(fi.src).then((res) => res.blob())
-    : fi.rawFile;
+ 
 
-  const file = fi.rawFile;
-  const fileExt = file.name.split(".").pop();
-  const fileName = `${Math.random()}.${fileExt}`;
-  const filePath = `${fileName}`;
-  const { error: uploadError } = await supabase.storage
-    .from("attachments")
-    .upload(filePath, dataContent);
+  // const dataContent = fi.src
+  //   ? await fetch(fi.src).then((res) => res.blob())
+  //   : fi.rawFile;
 
-  if (uploadError) {
-    console.error("uploadError", uploadError);
-    throw new Error("Failed to upload attachment");
-  }
+  // const file = fi.rawFile;
+  // const fileExt = file.name.split(".").pop();
+  // const fileName = `${Math.random()}.${fileExt}`;
+  // const filePath = `${fileName}`;
+  // const { error: uploadError } = await supabase.storage
+  //   .from("attachments")
+  //   .upload(filePath, dataContent);
 
-  const { data } = supabase.storage.from("attachments").getPublicUrl(filePath);
+  // if (uploadError) {
+  //   console.error("uploadError", uploadError);
+  //   throw new Error("Failed to upload attachment");
+  // }
 
-  fi.path = filePath;
-  fi.src = data.publicUrl;
+  // //const { data } = supabase.storage.from("attachments").getPublicUrl(filePath);
 
-  // save MIME type
-  const mimeType = file.type;
-  fi.type = mimeType;
+  fi.path = res.data.object_path;
+
+  const publicUrl = `${swa}/${service}/objects/attachments?object_path=${fi.path}`;
+  fi.src = publicUrl;
+  fi.type = fi.rawFile.type;
+  // // save MIME type
+  // const mimeType = file.type;
+  // fi.type = mimeType;
 
   return fi;
 };

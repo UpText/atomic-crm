@@ -1,0 +1,5 @@
+/Users/ole/UpText/Repos/atomic-crm/sqlwebapi/dbProj/DbProjAtomicCrm/bin/Debug/DbProjAtomicCrm.dacpac
+/Users/ole/UpText/Repos/atomic-crm/sqlwebapi/dbProj/DbProjAtomicCrm/obj/Debug/Model.xml
+/Users/ole/UpText/Repos/atomic-crm/sqlwebapi/dbProj/DbProjAtomicCrm/obj/Debug/refactor.xml
+/Users/ole/UpText/Repos/atomic-crm/sqlwebapi/dbProj/DbProjAtomicCrm/obj/Debug/postdeploy.sql
+/Users/ole/UpText/Repos/atomic-crm/sqlwebapi/dbProj/DbProjAtomicCrm/obj/Debug/predeploy.sql
