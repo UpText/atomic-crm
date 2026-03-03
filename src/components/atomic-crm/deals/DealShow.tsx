@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { format, isValid } from "date-fns";
+import { isValid } from "date-fns";
 import { Archive, ArchiveRestore } from "lucide-react";
 import {
   ShowBase,
@@ -27,6 +27,7 @@ import { useConfigurationContext } from "../root/ConfigurationContext";
 import type { Deal } from "../types";
 import { ContactList } from "./ContactList";
 import { findDealLabel } from "./deal";
+import { formatISODateString } from "./dealUtils";
 
 export const DealShow = ({ open, id }: { open: boolean; id?: string }) => {
   const redirect = useRedirect();
@@ -48,7 +49,7 @@ export const DealShow = ({ open, id }: { open: boolean; id?: string }) => {
 };
 
 const DealShowContent = () => {
-  const { dealStages } = useConfigurationContext();
+  const { dealStages, dealCategories } = useConfigurationContext();
   const record = useRecordContext<Deal>();
   if (!record) return null;
 
@@ -91,7 +92,7 @@ const DealShowContent = () => {
               <div className="flex items-center gap-2">
                 <span className="text-sm">
                   {isValid(new Date(record.expected_closing_date))
-                    ? format(new Date(record.expected_closing_date), "PP")
+                    ? formatISODateString(record.expected_closing_date)
                     : "Invalid date"}
                 </span>
                 {new Date(record.expected_closing_date) < new Date() ? (
@@ -120,7 +121,10 @@ const DealShowContent = () => {
                 <span className="text-xs text-muted-foreground tracking-wide">
                   Category
                 </span>
-                <span className="text-sm">{record.category}</span>
+                <span className="text-sm">
+                  {dealCategories.find((c) => c.value === record.category)
+                    ?.label ?? record.category}
+                </span>
               </div>
             )}
 

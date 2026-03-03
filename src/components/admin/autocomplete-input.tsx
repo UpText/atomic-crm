@@ -23,7 +23,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import type { ChoicesProps, InputProps } from "ra-core";
+import type {
+  ChoicesProps,
+  InputProps,
+  SupportCreateSuggestionOptions,
+} from "ra-core";
 import {
   useChoices,
   useChoicesContext,
@@ -32,10 +36,10 @@ import {
   useTranslate,
   FieldTitle,
   useEvent,
+  useSupportCreateSuggestion,
 } from "ra-core";
 import { InputHelperText } from "./input-helper-text";
-import type { SupportCreateSuggestionOptions } from "@/hooks/useSupportCreateSuggestion";
-import { useSupportCreateSuggestion } from "@/hooks/useSupportCreateSuggestion";
+import { PopoverProps } from "@radix-ui/react-popover";
 
 /**
  * Form control that lets users choose a value from a list using a dropdown with autocompletion.
@@ -84,7 +88,7 @@ export const AutocompleteInput = (
       inputText?:
         | React.ReactNode
         | ((option: any | undefined) => React.ReactNode);
-    },
+    } & Pick<PopoverProps, "modal">,
 ) => {
   const {
     filterToQuery = DefaultFilterToQuery,
@@ -96,6 +100,7 @@ export const AutocompleteInput = (
     createItemLabel,
     onCreate,
     optionText,
+    modal,
   } = props;
   const {
     allChoices = [],
@@ -212,7 +217,7 @@ export const AutocompleteInput = (
           </FormLabel>
         )}
         <FormControl>
-          <Popover open={open} onOpenChange={handleOpenChange}>
+          <Popover open={open} onOpenChange={handleOpenChange} modal={modal}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"

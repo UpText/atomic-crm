@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Form, required, useLogin, useNotify } from "ra-core";
 import type { SubmitHandler, FieldValues } from "react-hook-form";
-import { Link } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { TextInput } from "@/components/admin/text-input";
 import { Notification } from "@/components/admin/notification";
@@ -18,12 +18,46 @@ import { SSOAuthButton } from "./SSOAuthButton";
  * @see {@link https://marmelab.com/shadcn-admin-kit/docs/security Security documentation}
  */
 export const LoginPage = (props: { redirectTo?: string }) => {
-  const { darkModeLogo, title, googleWorkplaceDomain } =
-    useConfigurationContext();
+  const {
+    darkModeLogo,
+    title,
+    googleWorkplaceDomain,
+    disableEmailPasswordAuthentication,
+  } = useConfigurationContext();
   const { redirectTo } = props;
   const [loading, setLoading] = useState(false);
+  const hasDisplayedRecoveryNotification = useRef(false);
+  const location = useLocation();
+  const navigate = useNavigate();
   const login = useLogin();
   const notify = useNotify();
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const shouldNotify = searchParams.get("passwordRecoveryEmailSent") === "1";
+
+    if (!shouldNotify || hasDisplayedRecoveryNotification.current) {
+      return;
+    }
+
+    hasDisplayedRecoveryNotification.current = true;
+    notify(
+      "If you're a registered user, you should receive a password recovery email shortly.",
+      {
+        type: "success",
+      },
+    );
+
+    searchParams.delete("passwordRecoveryEmailSent");
+    const nextSearch = searchParams.toString();
+    navigate(
+      {
+        pathname: location.pathname,
+        search: nextSearch ? `?${nextSearch}` : "",
+      },
+      { replace: true },
+    );
+  }, [location.pathname, location.search, navigate, notify]);
 
   const handleSubmit: SubmitHandler<FieldValues> = (values) => {
     setLoading(true);
@@ -69,44 +103,44 @@ export const LoginPage = (props: { redirectTo?: string }) => {
             <div className="text-center">
               <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
             </div>
-            <Form className="space-y-8" onSubmit={handleSubmit}>
-              <TextInput
-                label="Email"
-                source="email"
-                type="email"
-                validate={required()}
-              />
-              <TextInput
-                label="Password"
-                source="password"
-                type="password"
-                validate={required()}
-              />
-              <div className="flex flex-col gap-4">
-                <Button
-                  type="submit"
-                  className="w-full cursor-pointer"
-                  disabled={loading}
-                >
-                  Sign in
-                </Button>
-                {googleWorkplaceDomain ? (
-                  <SSOAuthButton
-                    className="w-full"
-                    domain={googleWorkplaceDomain}
+            {disableEmailPasswordAuthentication ? null : (
+              <Form className="space-y-8" onSubmit={handleSubmit}>
+                <TextInput
+                  label="Email"
+                  source="email"
+                  type="email"
+                  validate={required()}
+                />
+                <TextInput
+                  label="Password"
+                  source="password"
+                  type="password"
+                  validate={required()}
+                />
+                <div className="flex flex-col gap-4">
+                  <Button
+                    type="submit"
+                    className="cursor-pointer"
+                    disabled={loading}
                   >
-                    Sign in with Google Workplace
-                  </SSOAuthButton>
-                ) : null}
-              </div>
-            </Form>
-
-            <Link
-              to={"/forgot-password"}
-              className="block text-sm text-center hover:underline"
-            >
-              Forgot your password?
-            </Link>
+                    Sign in
+                  </Button>
+                </div>
+              </Form>
+            )}
+            {googleWorkplaceDomain ? (
+              <SSOAuthButton className="w-full" domain={googleWorkplaceDomain}>
+                Sign in with Google Workplace
+              </SSOAuthButton>
+            ) : null}
+            {disableEmailPasswordAuthentication ? null : (
+              <Link
+                to={"/forgot-password"}
+                className="block text-sm text-center hover:underline"
+              >
+                Forgot your password?
+              </Link>
+            )}
           </div>
         </div>
       </div>

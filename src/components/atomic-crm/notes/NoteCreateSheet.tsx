@@ -60,7 +60,7 @@ export const NoteCreateSheet = ({
     <CreateSheet
       resource="contact_notes"
       title={
-        <h1 className="text-xl font-semibold">
+        <h1 className="text-xl font-semibold truncate pr-10">
           {!selectContact ? "Create Note for " : "Create Note"}
           {!selectContact && (
             <RecordRepresentation record={contact} resource="contacts" />
@@ -74,7 +74,7 @@ export const NoteCreateSheet = ({
         [foreignKeyMapping["contacts"]]:
           contact_id ?? data[foreignKeyMapping["contacts"]],
         sales_id: identity.id,
-        date: data.date || getCurrentDate(),
+        date: new Date(data.date || getCurrentDate()).toISOString(),
       })}
       mutationOptions={{
         onSuccess: handleSuccess,

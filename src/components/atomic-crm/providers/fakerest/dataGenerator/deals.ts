@@ -23,14 +23,16 @@ export const generateDeals = (db: Db): Deal[] => {
     const expected_closing_date = randomDate(
       new Date(created_at),
       add(new Date(created_at), { months: 6 }),
-    ).toISOString();
+    )
+      .toISOString()
+      .split("T")[0];
 
     return {
       id,
       name: lowercaseName[0].toUpperCase() + lowercaseName.slice(1),
       company_id: company.id,
       contact_ids: contacts.map((contact) => contact.id),
-      category: random.arrayElement(defaultDealCategories),
+      category: random.arrayElement(defaultDealCategories).value,
       stage: random.arrayElement(defaultDealStages).value,
       description: lorem.paragraphs(datatype.number({ min: 1, max: 4 })),
       amount: datatype.number(1000) * 100,
