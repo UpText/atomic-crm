@@ -2,7 +2,6 @@ import { fetchUtils, HttpError } from "ra-core";
 
 import simpleRestProvider from "ra-data-simple-rest";
 
-import { supabaseDataProvider } from "ra-supabase-core";
 import {
   withLifecycleCallbacks,
   type CreateParams,
@@ -61,7 +60,7 @@ if (import.meta.env.VITE_SQLWEBAPI_URL === undefined) {
 }
 if (import.meta.env.VITE_SERVICE === undefined) {
   throw new Error(
-    "Please set the VITE_SB_PUBLISHABLE_KEY environment variable",
+    "Please set the VITE_SERVICEenvironment variable",
   );
 }
 
@@ -175,22 +174,23 @@ const dataProviderWithCustomMethods = {
 
     return rdata;
   },
-  async updatePassword(id: Identifier) {
-    const { data: passwordUpdated, error } =
-      await supabase.functions.invoke<boolean>("update_password", {
-        method: "PATCH",
-        body: {
-          sales_id: id,
-        },
-      });
+  // async updatePassword(id: Identifier) {
+  //   const { data: passwordUpdated, error } =
+  //     await supabase.functions.invoke<boolean>("update_password", {
+  //       method: "PATCH",
+  //       body: {
+  //         sales_id: id,
+  //       },
+  //     });
 
-    if (!passwordUpdated || error) {
-      console.error("update_password.error", error);
-      throw new Error("Failed to update password");
-    }
+  //   if (!passwordUpdated || error) {
+  //     console.error("update_password.error", error);
+  //     throw new Error("Failed to update password");
+  //   }
 
-    return passwordUpdated;
-  },
+  //   return passwordUpdated;
+  // },
+
   async unarchiveDeal(deal: Deal) {
     // get all deals where stage is the same as the deal to unarchive
     const { data: deals } = await baseDataProvider.getList<Deal>("deals", {
@@ -221,19 +221,6 @@ const dataProviderWithCustomMethods = {
   },
   async isInitialized() {
     return getIsInitialized();
-  },
-  async mergeContacts(sourceId: Identifier, targetId: Identifier) {
-    const { data, error } = await supabase.functions.invoke("merge_contacts", {
-      method: "POST",
-      body: { loserId: sourceId, winnerId: targetId },
-    });
-
-    if (error) {
-      console.error("merge_contacts.error", error);
-      throw new Error("Failed to merge contacts");
-    }
-
-    return data;
   },
 } satisfies DataProvider;
 
