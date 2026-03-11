@@ -1,111 +1,165 @@
-import type { AuthProvider } from "ra-core";
+// src/authProvider.ts
 
-import type { Sale } from "../../types";
-import { canAccess } from "../commons/canAccess";
-import { dataProvider } from "./dataProvider";
 
-export const DEFAULT_USER = {
-  id: 0,
-  first_name: "Jane",
-  last_name: "Doe",
-  email: "janedoe@atomic.dev",
-  password: "demo",
-  administrator: true,
-  avatar: {
-    src: "data:image/jpeg;base64,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",
-  },
-} as const;
+const ensureTrailingSlash = (url: string) => (url.endsWith("/") ? url : `${url}/`);
+const USER_STORAGE_KEY = "user";
 
-export const USER_STORAGE_KEY = "user";
+const pickToken = (auth: any) =>
+  auth?.token ??
+  auth?.accessToken ??
+  auth?.access_token ??
+  auth?.jwt ??
+  auth?.idToken ??
+  null;
 
-localStorage.setItem(USER_STORAGE_KEY, JSON.stringify({ ...DEFAULT_USER }));
+const parseJsonSafely = async (response: Response) => {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+};
 
-async function getUser(email: string) {
-  const sales = await dataProvider.getList("sales", {
-    pagination: { page: 1, perPage: 200 },
-    sort: { field: "name", order: "ASC" },
+const extractFirstRecord = (payload: any) => {
+  if (Array.isArray(payload)) {
+    return payload[0] ?? null;
+  }
+  if (Array.isArray(payload?.data)) {
+    return payload.data[0] ?? null;
+  }
+  if (payload?.data && typeof payload.data === "object") {
+    return payload.data;
+  }
+  if (payload && typeof payload === "object") {
+    return payload;
+  }
+  return null;
+};
+
+const fetchUserByEmail = async ({
+  baseUrl,
+  service,
+  email,
+  token,
+}: {
+  baseUrl: string;
+  service: string;
+  email: string;
+  token: string | null;
+}) => {
+  const params = new URLSearchParams({
+    filter: JSON.stringify({ email }),
+    range: JSON.stringify([0, 0]),
+    sort: JSON.stringify(["id", "ASC"]),
   });
-
-  if (!sales.data.length) {
-    return { ...DEFAULT_USER };
+  const headers: HeadersInit = {};
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
   }
 
-  const user = sales.data.find((sale) => sale.email === email);
-  if (!user || user.disabled) {
-    return { ...DEFAULT_USER };
+  const response = await fetch(`${baseUrl}${service}/sales?${params.toString()}`, {
+    headers,
+  });
+  if (!response.ok) {
+    return null;
   }
-  return user;
-}
 
-export const authProvider: AuthProvider = {
-  login: async ({ email }) => {
-    const user = await getUser(email);
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
-    return Promise.resolve();
-  },
-  logout: () => {
-    localStorage.removeItem(USER_STORAGE_KEY);
-    return Promise.resolve();
-  },
-  checkError: () => Promise.resolve(),
-  checkAuth: () =>
-    localStorage.getItem(USER_STORAGE_KEY)
-      ? Promise.resolve()
-      : Promise.reject(),
-  canAccess: async ({ signal: _signal, ...params }) => {
-    // Get the current user
-    const userItem = localStorage.getItem(USER_STORAGE_KEY);
-    const localUser = userItem ? (JSON.parse(userItem) as Sale) : null;
-    if (!localUser) return false;
+  const payload = await parseJsonSafely(response);
+  return extractFirstRecord(payload);
+};
 
-    // Compute access rights from the sale role
-    const role = localUser.administrator ? "admin" : "user";
-    return canAccess(role, params);
-  },
-  getIdentity: () => {
-    const userItem = localStorage.getItem(USER_STORAGE_KEY);
-    const user = userItem ? (JSON.parse(userItem) as Sale) : null;
-    return Promise.resolve({
-      id: user?.id ?? 0,
-      fullName: user ? `${user.first_name} ${user.last_name}` : "Jane Doe",
-      avatar: user?.avatar?.src,
+export const authProvider = {
+  // POST your credentials, store tokens/user in storage or cookies
+  async login({
+    username,
+    email,
+    password,
+    service,
+  }: {
+    username?: string;
+    email?: string;
+    password: string;
+    service: string;
+  }) {
+    const swa = import.meta.env.VITE_SQLWEBAPI_URL ?? "";
+    const baseUrl = ensureTrailingSlash(swa);
+    const normalizedService = service.trim();
+    const loginEmail = String(email ?? username ?? "").trim();
+    const res = await fetch(`${baseUrl}${normalizedService}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: username ?? email, password }),
     });
+    if (!res.ok) throw new Error("Invalid credentials");
+    const rawAuth = await res.json();
+    const auth = { ...rawAuth, token: pickToken(rawAuth) };
+    localStorage.setItem("auth", JSON.stringify(auth));
+    localStorage.setItem("service", normalizedService);
+
+    if (loginEmail) {
+      try {
+        const user = await fetchUserByEmail({
+          baseUrl,
+          service: normalizedService,
+          email: loginEmail,
+          token: auth.token,
+        });
+        if (user) {
+          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+        } else {
+          localStorage.removeItem(USER_STORAGE_KEY);
+        }
+      } catch {
+        localStorage.removeItem(USER_STORAGE_KEY);
+      }
+    }
   },
-  async getAuthorizationDetails() {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    // return dummy data to avoid errors in OAuthConsentPage
+
+  // Called on navigation to guard routes
+  async checkAuth() {
+    return localStorage.getItem("auth") ? Promise.resolve() : Promise.reject();
+  },
+
+  // Called when a dataProvider call returns an error
+  async checkError(error: { status?: number }) {
+    const s = error?.status;
+    if (s === 401 || s === 403) {
+      localStorage.removeItem("auth");
+      localStorage.removeItem(USER_STORAGE_KEY);
+      return Promise.reject();
+    }
+    return Promise.resolve();
+  },
+
+  // Log out
+  async logout() {
+    localStorage.removeItem("auth");
+    localStorage.removeItem(USER_STORAGE_KEY);
+  },
+
+  // Optional: user identity for the app bar avatar/name
+  async getIdentity() {
+    const user = JSON.parse(localStorage.getItem(USER_STORAGE_KEY) || "null");
+    const auth = JSON.parse(localStorage.getItem("auth") || "{}");
     return {
-      data: {
-        authorization_id: "dummy",
-        user: {
-          id: "0",
-          email: "johndoe@example.com",
-        },
-        client: {
-          name: "Dummy Client",
-        },
-        scope: "openid profile email phone",
-        redirect_uri: "https://example.com/auth_callback",
-      },
-      error: null,
+      id: user?.id ?? auth.user?.id,
+      fullName:
+        user?.first_name && user?.last_name
+          ? `${user.first_name} ${user.last_name}`
+          : auth.user?.name,
+      avatar: user?.avatar?.src ?? auth.user?.avatar,
     };
   },
-  async approveAuthorization() {
-    // return dummy success response
-    return {
-      data: {
-        redirect_url: "https://example.com/auth_callback",
-      },
-      error: null,
-    };
-  },
-  async denyAuthorization() {
-    // return dummy denied response
-    return {
-      data: {
-        redirect_url: "https://example.com/denied",
-      },
-      error: null,
-    };
+
+  // Optional: roles/permissions
+  async getPermissions() {
+    const user = JSON.parse(localStorage.getItem(USER_STORAGE_KEY) || "null");
+    const auth = JSON.parse(localStorage.getItem("auth") || "{}");
+    if (typeof user?.administrator === "boolean") {
+      return user.administrator ? "admin" : "user";
+    }
+    return auth.user?.role ?? "user";
   },
 };
+
+export default authProvider;

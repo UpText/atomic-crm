@@ -21,6 +21,7 @@ import type {
   SalesFormData,
   SignUpData,
 } from "../../types";
+import type { ConfigurationContextValue } from "../../root/ConfigurationContext";
 import { getActivityLog } from "../commons/activity";
 import { getCompanyAvatar } from "../commons/getCompanyAvatar";
 import { getContactAvatar } from "../commons/getContactAvatar";
@@ -174,22 +175,31 @@ const dataProviderWithCustomMethods = {
 
     return rdata;
   },
-  // async updatePassword(id: Identifier) {
-  //   const { data: passwordUpdated, error } =
-  //     await supabase.functions.invoke<boolean>("update_password", {
-  //       method: "PATCH",
-  //       body: {
-  //         sales_id: id,
-  //       },
-  //     });
+  async updatePassword(id: Identifier) {
+    if (typeof window === "undefined") {
+      throw new Error("Password update is only available in the browser");
+    }
 
-  //   if (!passwordUpdated || error) {
-  //     console.error("update_password.error", error);
-  //     throw new Error("Failed to update password");
-  //   }
+    const newPassword = window.prompt("Enter a new password");
+    if (newPassword == null) {
+      return null;
+    }
 
-  //   return passwordUpdated;
-  // },
+    const normalizedPassword = newPassword.trim();
+    if (!normalizedPassword) {
+      throw new Error("Password cannot be empty");
+    }
+
+    const response = await baseDataProvider.update("sales_password", {
+      id,
+      data: {
+        id,
+        password: normalizedPassword,
+      },
+    });
+
+    return response;
+  },
 
   async unarchiveDeal(deal: Deal) {
     // get all deals where stage is the same as the deal to unarchive
@@ -222,6 +232,24 @@ const dataProviderWithCustomMethods = {
   async isInitialized() {
     return getIsInitialized();
   },
+  async getConfiguration(): Promise<ConfigurationContextValue> {
+    const { data } = await baseDataProvider.getOne("configuration", { id: 1 });
+    return (data?.config as ConfigurationContextValue) ?? {};
+  },
+  async updateConfiguration(
+    config: ConfigurationContextValue,
+  ): Promise<ConfigurationContextValue> {
+    const { data: previousData } = await baseDataProvider.getOne(
+      "configuration",
+      { id: 1 },
+    );
+    await baseDataProvider.update("configuration", {
+      id: 1,
+      data: { config },
+      previousData,
+    });
+    return config;
+  },
 } satisfies DataProvider;
 
 export type CrmDataProvider = typeof dataProviderWithCustomMethods;
@@ -229,6 +257,17 @@ export type CrmDataProvider = typeof dataProviderWithCustomMethods;
 export const dataProvider = withLifecycleCallbacks(
   dataProviderWithCustomMethods,
   [
+    {
+      resource: "configuration",
+      beforeUpdate: async (params) => {
+        const config = params.data.config;
+        if (config) {
+          config.lightModeLogo = await processConfigLogo(config.lightModeLogo);
+          config.darkModeLogo = await processConfigLogo(config.darkModeLogo);
+        }
+        return params;
+      },
+    },
     {
       resource: "contact_notes",
       beforeSave: async (data: ContactNote, _, __) => {
@@ -350,6 +389,17 @@ const applyFullTextSearch = (columns: string[]) => (params: GetListParams) => {
       }, {}),
     },
   };
+};
+
+const processConfigLogo = async (logo: any): Promise<string> => {
+  if (typeof logo === "string") {
+    return logo;
+  }
+  if (logo?.rawFile instanceof File) {
+    const uploadedLogo = await uploadToBucket(logo);
+    return uploadedLogo.src;
+  }
+  return logo?.src ?? "";
 };
 
 function arrayBufferToBase64(buffer: ArrayBuffer): string {

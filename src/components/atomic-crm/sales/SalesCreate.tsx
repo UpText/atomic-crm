@@ -1,7 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
-import { useDataProvider, useNotify, useRedirect } from "ra-core";
+import { required, useDataProvider, useNotify, useRedirect } from "ra-core";
 import type { SubmitHandler } from "react-hook-form";
 import { SimpleForm } from "@/components/admin/simple-form";
+import { TextInput } from "@/components/admin/text-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import type { CrmDataProvider } from "../providers/types";
@@ -9,6 +10,7 @@ import type { SalesFormData } from "../types";
 import { SalesInputs } from "./SalesInputs";
 
 export function SalesCreate() {
+  const isSqlWebApi = Boolean(import.meta.env.VITE_SQLWEBAPI_URL);
   const dataProvider = useDataProvider<CrmDataProvider>();
   const notify = useNotify();
   const redirect = useRedirect();
@@ -43,6 +45,15 @@ export function SalesCreate() {
         <CardContent>
           <SimpleForm onSubmit={onSubmit as SubmitHandler<any>}>
             <SalesInputs />
+            {isSqlWebApi ? (
+              <TextInput
+                source="password"
+                label="Password"
+                type="password"
+                validate={required()}
+                helperText={false}
+              />
+            ) : null}
           </SimpleForm>
         </CardContent>
       </Card>

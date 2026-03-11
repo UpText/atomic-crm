@@ -9,7 +9,12 @@ import { Link } from "react-router";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { ReferenceField } from "@/components/admin/reference-field";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 import { FormToolbar } from "../layout/FormToolbar";
 import { CompanyAvatar } from "../companies/CompanyAvatar";
@@ -29,6 +34,9 @@ export const DealEdit = ({ open, id }: { open: boolean; id?: string }) => {
   return (
     <Dialog open={open} onOpenChange={() => handleClose()}>
       <DialogContent className="lg:max-w-4xl p-4 overflow-y-auto max-h-9/10 top-1/20 translate-y-0">
+        <DialogDescription className="sr-only">
+          Edit this deal and update its details, stage, and linked contacts.
+        </DialogDescription>
         {id ? (
           <EditBase
             id={id}

@@ -10,15 +10,34 @@ import type { SubmitHandler } from "react-hook-form";
 import { SimpleForm } from "@/components/admin/simple-form";
 import { CancelButton } from "@/components/admin/cancel-button";
 import { SaveButton } from "@/components/admin/form";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 import type { CrmDataProvider } from "../providers/types";
 import type { Sale, SalesFormData } from "../types";
 import { SalesInputs } from "./SalesInputs";
 
-function EditToolbar() {
+function EditToolbar({
+  showChangePassword,
+  onChangePassword,
+  changePasswordDisabled,
+}: {
+  showChangePassword: boolean;
+  onChangePassword: () => void;
+  changePasswordDisabled: boolean;
+}) {
   return (
     <div className="flex justify-end gap-4">
+      {showChangePassword ? (
+        <Button
+          variant="outline"
+          type="button"
+          onClick={onChangePassword}
+          disabled={changePasswordDisabled}
+        >
+          Change password
+        </Button>
+      ) : null}
       <CancelButton />
       <SaveButton />
     </div>
@@ -27,6 +46,7 @@ function EditToolbar() {
 
 export function SalesEdit() {
   const { record } = useEditController();
+  const isSqlWebApi = Boolean(import.meta.env.VITE_SQLWEBAPI_URL);
 
   const dataProvider = useDataProvider<CrmDataProvider>();
   const notify = useNotify();
@@ -53,12 +73,43 @@ export function SalesEdit() {
     mutate(data);
   };
 
+  const { mutate: updatePassword } = useMutation({
+    mutationKey: ["salesUpdatePassword", record?.id],
+    mutationFn: async () => {
+      if (!record) {
+        throw new Error("Record not found");
+      }
+      return dataProvider.updatePassword(record.id);
+    },
+    onSuccess: (result) => {
+      if (result == null) {
+        return;
+      }
+      notify(
+        isSqlWebApi
+          ? "Password updated successfully"
+          : "A reset password email has been sent to your email address",
+      );
+    },
+    onError: (error) => {
+      notify(error instanceof Error ? error.message : "Failed to update password", {
+        type: "error",
+      });
+    },
+  });
+
   return (
     <div className="max-w-lg w-full mx-auto mt-8">
       <Card>
         <CardContent>
           <SimpleForm
-            toolbar={<EditToolbar />}
+            toolbar={
+              <EditToolbar
+                showChangePassword={isSqlWebApi}
+                onChangePassword={() => updatePassword()}
+                changePasswordDisabled={!record}
+              />
+            }
             onSubmit={onSubmit as SubmitHandler<any>}
             record={record}
           >

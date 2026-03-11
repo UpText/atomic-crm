@@ -2,7 +2,12 @@
 import { useGetIdentity, useGetList } from "ra-core";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 import type { Deal } from "../types";
 import { DealCardContent } from "./DealCard";
@@ -57,6 +62,9 @@ export const DealArchivedList = () => {
       <Dialog open={openDialog} onOpenChange={() => setOpenDialog(false)}>
         <DialogContent className="lg:max-w-4xl overflow-y-auto max-h-9/10 top-1/20 translate-y-0">
           <DialogTitle>Archived Deals</DialogTitle>
+          <DialogDescription className="sr-only">
+            Browse deals that were archived, grouped by archive date.
+          </DialogDescription>
           <div className="flex flex-col gap-8">
             {Object.entries(archivedListsByDate).map(([date, deals]) => (
               <div key={date} className="flex flex-col gap-4">

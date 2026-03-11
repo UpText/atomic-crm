@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Form, required, useLogin, useNotify } from "ra-core";
 import type { SubmitHandler, FieldValues } from "react-hook-form";
 import { Link, useLocation, useNavigate } from "react-router";
@@ -17,20 +17,35 @@ import { SSOAuthButton } from "./SSOAuthButton";
  * @see {@link https://marmelab.com/shadcn-admin-kit/docs/loginpage LoginPage documentation}
  * @see {@link https://marmelab.com/shadcn-admin-kit/docs/security Security documentation}
  */
-export const LoginPage = (props: { redirectTo?: string }) => {
+type LoginPageProps = {
+  redirectTo?: string;
+  showServiceField?: boolean;
+  defaultValues?: FieldValues;
+  transformSubmitValues?: (values: FieldValues) => FieldValues;
+  additionalFields?: ReactNode;
+};
+
+export const LoginPage = (props: LoginPageProps) => {
   const {
     darkModeLogo,
     title,
     googleWorkplaceDomain,
     disableEmailPasswordAuthentication,
   } = useConfigurationContext();
-  const { redirectTo } = props;
+  const {
+    redirectTo,
+    showServiceField = false,
+    defaultValues,
+    transformSubmitValues,
+    additionalFields,
+  } = props;
   const [loading, setLoading] = useState(false);
   const hasDisplayedRecoveryNotification = useRef(false);
   const location = useLocation();
   const navigate = useNavigate();
   const login = useLogin();
   const notify = useNotify();
+  const isSqlWebApi = Boolean(import.meta.env.VITE_SQLWEBAPI_URL);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -41,12 +56,14 @@ export const LoginPage = (props: { redirectTo?: string }) => {
     }
 
     hasDisplayedRecoveryNotification.current = true;
-    notify(
-      "If you're a registered user, you should receive a password recovery email shortly.",
-      {
-        type: "success",
-      },
-    );
+    if (!isSqlWebApi) {
+      notify(
+        "If you're a registered user, you should receive a password recovery email shortly.",
+        {
+          type: "success",
+        },
+      );
+    }
 
     searchParams.delete("passwordRecoveryEmailSent");
     const nextSearch = searchParams.toString();
@@ -57,11 +74,14 @@ export const LoginPage = (props: { redirectTo?: string }) => {
       },
       { replace: true },
     );
-  }, [location.pathname, location.search, navigate, notify]);
+  }, [isSqlWebApi, location.pathname, location.search, navigate, notify]);
 
   const handleSubmit: SubmitHandler<FieldValues> = (values) => {
+    const submitValues = transformSubmitValues
+      ? transformSubmitValues(values)
+      : values;
     setLoading(true);
-    login(values, redirectTo)
+    login(submitValues, redirectTo)
       .then(() => {
         setLoading(false);
       })
@@ -104,7 +124,18 @@ export const LoginPage = (props: { redirectTo?: string }) => {
               <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
             </div>
             {disableEmailPasswordAuthentication ? null : (
-              <Form className="space-y-8" onSubmit={handleSubmit}>
+              <Form
+                className="space-y-8"
+                onSubmit={handleSubmit}
+                defaultValues={defaultValues}
+              >
+                {showServiceField ? (
+                  <TextInput
+                    label="Service"
+                    source="service"
+                    validate={required()}
+                  />
+                ) : null}
                 <TextInput
                   label="Email"
                   source="email"
@@ -117,6 +148,7 @@ export const LoginPage = (props: { redirectTo?: string }) => {
                   type="password"
                   validate={required()}
                 />
+                {additionalFields}
                 <div className="flex flex-col gap-4">
                   <Button
                     type="submit"

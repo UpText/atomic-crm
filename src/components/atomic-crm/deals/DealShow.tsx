@@ -17,7 +17,7 @@ import { ReferenceField } from "@/components/admin/reference-field";
 import { ReferenceManyField } from "@/components/admin/reference-many-field";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 
 import { CompanyAvatar } from "../companies/CompanyAvatar";
@@ -43,6 +43,10 @@ export const DealShow = ({ open, id }: { open: boolean; id?: string }) => {
             <DealShowContent />
           </ShowBase>
         ) : null}
+        <DialogTitle className="sr-only">Deal details</DialogTitle>
+        <DialogDescription className="sr-only">
+            View and manage this deal.
+        </DialogDescription>
       </DialogContent>
     </Dialog>
   );

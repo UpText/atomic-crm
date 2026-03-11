@@ -34,6 +34,7 @@ export const NumberInput = (props: NumberInputProps) => {
     label,
     source,
     className,
+    defaultValue: _defaultValue,
     resource: resourceProp,
     validate: _validateProp,
     format: _formatProp,

@@ -78,6 +78,7 @@ const ProfileForm = ({
   setEditMode: (value: boolean) => void;
 }) => {
   const notify = useNotify();
+  const isSqlWebApi = Boolean(import.meta.env.VITE_SQLWEBAPI_URL);
   const record = useRecordContext<Sale>();
   const { identity, refetch } = useGetIdentity();
   const { isDirty } = useFormState();
@@ -91,8 +92,15 @@ const ProfileForm = ({
       }
       return dataProvider.updatePassword(identity.id);
     },
-    onSuccess: () => {
-      notify("A reset password email has been sent to your email address");
+    onSuccess: (result) => {
+      if (result == null) {
+        return;
+      }
+      notify(
+        isSqlWebApi
+          ? "Password updated successfully"
+          : "A reset password email has been sent to your email address",
+      );
     },
     onError: (e) => {
       notify(`${e}`, {
