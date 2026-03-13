@@ -758,10 +758,32 @@ GO
          , @first_row INT = 0, @last_row INT = 1000 
          , @sort_field NVARCHAR(100) = NULL, @sort_order NVARCHAR(4) = NULL 
      ) AS 
+     DECLARE @deal_id_eq INT = TRY_CONVERT(INT, JSON_VALUE(@filter, N'$."deal_id"'));
+
+     DECLARE @ids_raw NVARCHAR(MAX)  = JSON_VALUE(@filter, '$."deal_id@in"')
+     IF @ids_raw IS NOT NULL
+          SET @ids_raw = 
+          '[' + 
+          REPLACE(REPLACE(@ids_raw, '(', ''), ')', '') 
+          + ']'
+
       SELECT  id AS id, deal_id, sales_id, date, text, COUNT(*) OVER() AS total_rows 
            FROM crm.deal_notes  
-           WHERE (@ID IS NULL OR @ID = id) 
-           AND (@filter IS NULL OR @filter = id OR CHARINDEX(@filter,CAST(deal_id AS varchar)) > 0)
+           WHERE (
+               @ID IS NULL
+               OR @ID = id
+           ) 
+           AND (
+               @deal_id_eq IS NULL
+               OR deal_id = @deal_id_eq
+           )
+           AND (
+               @ids_raw IS NULL
+               OR deal_id IN (
+                    SELECT TRY_CAST(value AS INT)
+                    FROM OPENJSON(@ids_raw)
+               )
+           )
             ORDER BY
            CASE WHEN @sort_field = 'id' AND @sort_order = 'ASC' THEN id END ASC, 
             CASE WHEN @sort_field = 'id' AND @sort_order = 'DESC' THEN id END DESC, 
@@ -830,8 +852,12 @@ GO
            WHERE (@ID IS NULL OR @ID = id) 
             AND (
                 @filter IS NULL
-                OR NOT EXISTS ( SELECT 1 FROM OPENJSON(@filter, '$.id'))
+                OR (
+                    NOT EXISTS ( SELECT 1 FROM OPENJSON(@filter, '$.id'))
+                    AND JSON_VALUE(@filter, '$.email') IS NULL
+                )
                 OR id IN (SELECT value FROM OPENJSON(@filter, '$.id'))
+                OR email = JSON_VALUE(@filter, '$.email')
             )
 
 --           AND (@filter IS NULL OR @filter = id OR CHARINDEX(@filter,CAST(user_id AS varchar)) > 0)
@@ -915,6 +941,7 @@ CREATE OR ALTER     PROCEDURE crmapi.sales_put(@ID varchar(max)
 , @last_name nvarchar(100)   = NULL 
 , @administrator bit = NULL 
 , @disabled bit = NULL 
+, @avatar nvarchar(max) = NULL
 
 ) AS
 IF NOT EXISTS(SELECT id FROM crm.sales WHERE @ID = id)  
@@ -922,12 +949,29 @@ BEGIN
    RAISERROR('Unknown sales',1,1) 
    RETURN 404
 END
+DECLARE @avatar_src nvarchar(2048) = NULL
+DECLARE @avatar_title nvarchar(255) = NULL
+DECLARE @avatar_path nvarchar(1024) = NULL
+DECLARE @avatar_type nvarchar(128) = NULL
+
+IF @avatar IS NOT NULL AND ISJSON(@avatar) = 1
+BEGIN
+    SET @avatar_src = JSON_VALUE(@avatar, '$.src')
+    SET @avatar_title = JSON_VALUE(@avatar, '$.title')
+    SET @avatar_path = JSON_VALUE(@avatar, '$.path')
+    SET @avatar_type = JSON_VALUE(@avatar, '$.type')
+END
+
 UPDATE crm.sales  SET 
      email = COALESCE(@email,email), 
      first_name = COALESCE(@first_name,first_name), 
      last_name = COALESCE(@last_name,last_name), 
      administrator = COALESCE(@administrator,administrator), 
-     disabled = COALESCE(@disabled,disabled)     
+     disabled = COALESCE(@disabled,disabled),    
+     avatar_src = COALESCE(@avatar_src,avatar_src), 
+     avatar_title = COALESCE(@avatar_title,avatar_title), 
+     avatar_path = COALESCE(@avatar_path,avatar_path), 
+     avatar_type = COALESCE(@avatar_type,avatar_type)     
      WHERE @ID = id 
 EXEC crmapi.sales_Get  @ID=@ID 
 RETURN 200 -- OK
@@ -1101,4 +1145,3 @@ RETURN 200 -- OK
 
 GO
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
-

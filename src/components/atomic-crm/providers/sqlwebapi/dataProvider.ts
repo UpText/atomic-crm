@@ -90,6 +90,26 @@ const processCompanyLogo = async (params: any) => {
   };
 };
 
+const processSaleAvatar = async <
+  T extends { avatar?: RAFile | Partial<RAFile> | null },
+>(
+  data: T,
+): Promise<T> => {
+  if (!data.avatar) {
+    return data;
+  }
+
+  const avatar =
+    data.avatar.rawFile instanceof File
+      ? await uploadToBucket(data.avatar as RAFile)
+      : data.avatar;
+
+  return {
+    ...data,
+    avatar,
+  };
+};
+
 async function processContactAvatar(
   params: UpdateParams<Contact>,
 ): Promise<UpdateParams<Contact>>;
@@ -163,7 +183,9 @@ const dataProviderWithCustomMethods = {
     };
   },
   async salesCreate(body: SalesFormData) {
-    const data = await baseDataProvider.create("sales", { data: body });
+    const data = await baseDataProvider.create("sales", {
+      data: await processSaleAvatar(body),
+    });
     return data;
   },
 
@@ -171,7 +193,10 @@ const dataProviderWithCustomMethods = {
     id: Identifier,
     data: Partial<Omit<SalesFormData, "password">>,
   ) {
-       const rdata = await baseDataProvider.update("sales", { id, data });
+    const rdata = await baseDataProvider.update("sales", {
+      id,
+      data: await processSaleAvatar(data),
+    });
 
     return rdata;
   },
@@ -294,7 +319,10 @@ export const dataProvider = withLifecycleCallbacks(
       resource: "sales",
       beforeSave: async (data: Sale, _, __) => {
         if (data.avatar) {
-          await uploadToBucket(data.avatar);
+          return {
+            ...data,
+            avatar: await uploadToBucket(data.avatar),
+          };
         }
         return data;
       },

@@ -38,8 +38,8 @@ export function UserMenu({ children }: UserMenuProps) {
 
   const [open, setOpen] = useState(false);
 
-  const handleToggleOpen = useCallback(() => {
-    setOpen((prevOpen) => !prevOpen);
+  const handleOpenChange = useCallback((nextOpen: boolean) => {
+    setOpen(nextOpen);
   }, []);
 
   const handleClose = useCallback(() => {
@@ -50,7 +50,7 @@ export function UserMenu({ children }: UserMenuProps) {
 
   return (
     <UserMenuContext.Provider value={{ onClose: handleClose }}>
-      <DropdownMenu open={open} onOpenChange={handleToggleOpen}>
+      <DropdownMenu open={open} onOpenChange={handleOpenChange}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"

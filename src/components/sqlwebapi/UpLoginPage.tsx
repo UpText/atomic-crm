@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import type { FieldValues } from "react-hook-form";
 import { LoginPage } from "@/components/atomic-crm/login/LoginPage";
 import { BooleanInput } from "@/components/admin/boolean-input";
@@ -12,6 +13,7 @@ const EMAIL_STORAGE_KEY = "up.login.email";
 const REMEMBER_STORAGE_KEY = "up.login.remember";
 
 export const UpLoginPage = (props: UpLoginPageProps) => {
+  const queryClient = useQueryClient();
   const defaultValues = useMemo<FieldValues>(() => {
     if (typeof window === "undefined") {
       return {};
@@ -38,6 +40,11 @@ export const UpLoginPage = (props: UpLoginPageProps) => {
           label="Remember service and email"
           helperText={false}
         />
+      }
+      onLoginSuccess={() =>
+        queryClient.invalidateQueries({
+          queryKey: ["auth", "getIdentity"],
+        })
       }
       transformSubmitValues={(values) => {
         const rememberMe = Boolean(values.rememberMe);

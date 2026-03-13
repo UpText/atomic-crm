@@ -23,6 +23,7 @@ type LoginPageProps = {
   defaultValues?: FieldValues;
   transformSubmitValues?: (values: FieldValues) => FieldValues;
   additionalFields?: ReactNode;
+  onLoginSuccess?: () => void | Promise<void>;
 };
 
 export const LoginPage = (props: LoginPageProps) => {
@@ -38,6 +39,7 @@ export const LoginPage = (props: LoginPageProps) => {
     defaultValues,
     transformSubmitValues,
     additionalFields,
+    onLoginSuccess,
   } = props;
   const [loading, setLoading] = useState(false);
   const hasDisplayedRecoveryNotification = useRef(false);
@@ -83,6 +85,7 @@ export const LoginPage = (props: LoginPageProps) => {
     setLoading(true);
     login(submitValues, redirectTo)
       .then(() => {
+        void onLoginSuccess?.();
         setLoading(false);
       })
       .catch((error) => {
