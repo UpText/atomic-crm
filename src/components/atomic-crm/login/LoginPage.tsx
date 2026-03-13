@@ -1,5 +1,6 @@
-import { type ReactNode, useEffect, useRef, useState } from "react";
-import { Form, required, useLogin, useNotify } from "ra-core";
+import { useEffect, useRef, useState } from "react";
+import { Form, required, useLogin, useNotify, useTranslate } from "ra-core";
+import type { ReactNode } from "react";
 import type { SubmitHandler, FieldValues } from "react-hook-form";
 import { Link, useLocation, useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
@@ -47,7 +48,7 @@ export const LoginPage = (props: LoginPageProps) => {
   const navigate = useNavigate();
   const login = useLogin();
   const notify = useNotify();
-  const isSqlWebApi = Boolean(import.meta.env.VITE_SQLWEBAPI_URL);
+  const translate = useTranslate();
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -58,14 +59,12 @@ export const LoginPage = (props: LoginPageProps) => {
     }
 
     hasDisplayedRecoveryNotification.current = true;
-    if (!isSqlWebApi) {
-      notify(
-        "If you're a registered user, you should receive a password recovery email shortly.",
-        {
-          type: "success",
-        },
-      );
-    }
+    notify("crm.auth.recovery_email_sent", {
+      type: "success",
+      messageArgs: {
+        _: "If you're a registered user, you should receive a password recovery email shortly.",
+      },
+    });
 
     searchParams.delete("passwordRecoveryEmailSent");
     const nextSearch = searchParams.toString();
@@ -76,7 +75,7 @@ export const LoginPage = (props: LoginPageProps) => {
       },
       { replace: true },
     );
-  }, [isSqlWebApi, location.pathname, location.search, navigate, notify]);
+  }, [location.pathname, location.search, navigate, notify]);
 
   const handleSubmit: SubmitHandler<FieldValues> = (values) => {
     const submitValues = transformSubmitValues
@@ -124,7 +123,9 @@ export const LoginPage = (props: LoginPageProps) => {
         <div className="flex flex-col justify-center w-full p-4 lg:p-8">
           <div className="w-full space-y-6 lg:mx-auto lg:w-[350px]">
             <div className="text-center">
-              <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
+              <h1 className="text-2xl font-semibold tracking-tight">
+                {translate("ra.auth.sign_in")}
+              </h1>
             </div>
             {disableEmailPasswordAuthentication ? null : (
               <Form
@@ -140,13 +141,13 @@ export const LoginPage = (props: LoginPageProps) => {
                   />
                 ) : null}
                 <TextInput
-                  label="Email"
+                  label="ra.auth.email"
                   source="email"
                   type="email"
                   validate={required()}
                 />
                 <TextInput
-                  label="Password"
+                  label="ra.auth.password"
                   source="password"
                   type="password"
                   validate={required()}
@@ -158,14 +159,16 @@ export const LoginPage = (props: LoginPageProps) => {
                     className="cursor-pointer"
                     disabled={loading}
                   >
-                    Sign in
+                    {translate("ra.auth.sign_in")}
                   </Button>
                 </div>
               </Form>
             )}
             {googleWorkplaceDomain ? (
               <SSOAuthButton className="w-full" domain={googleWorkplaceDomain}>
-                Sign in with Google Workplace
+                {translate("crm.auth.sign_in_google_workspace", {
+                  _: "Sign in with Google Workplace",
+                })}
               </SSOAuthButton>
             ) : null}
             {disableEmailPasswordAuthentication ? null : (
@@ -173,7 +176,9 @@ export const LoginPage = (props: LoginPageProps) => {
                 to={"/forgot-password"}
                 className="block text-sm text-center hover:underline"
               >
-                Forgot your password?
+                {translate("ra-supabase.auth.forgot_password", {
+                  _: "Forgot password?",
+                })}
               </Link>
             )}
           </div>

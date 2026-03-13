@@ -2,11 +2,15 @@ import { useMutation } from "@tanstack/react-query";
 import { CircleX, Copy, Pencil, Save } from "lucide-react";
 import {
   Form,
+  Loading,
   useDataProvider,
   useGetIdentity,
   useGetOne,
+  useLocaleState,
+  useLocales,
   useNotify,
   useRecordContext,
+  useTranslate,
 } from "ra-core";
 import { useState } from "react";
 import { useFormState } from "react-hook-form";
@@ -14,6 +18,13 @@ import { RecordField } from "@/components/admin/record-field";
 import { TextInput } from "@/components/admin/text-input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Tooltip,
   TooltipContent,
@@ -31,6 +42,7 @@ export const ProfilePage = () => {
   const { data, refetch: refetchUser } = useGetOne("sales", {
     id: identity?.id,
   });
+  const translate = useTranslate();
   const notify = useNotify();
   const dataProvider = useDataProvider<CrmDataProvider>();
 
@@ -38,7 +50,11 @@ export const ProfilePage = () => {
     mutationKey: ["signup"],
     mutationFn: async (data: SalesFormData) => {
       if (!identity) {
-        throw new Error("Record not found");
+        throw new Error(
+          translate("crm.profile.record_not_found", {
+            _: "Record not found",
+          }),
+        );
       }
       return dataProvider.salesUpdate(identity.id, data);
     },
@@ -46,16 +62,24 @@ export const ProfilePage = () => {
       refetchIdentity();
       refetchUser();
       setEditMode(false);
-      notify("Your profile has been updated");
+      notify("crm.profile.updated", {
+        messageArgs: {
+          _: "Your profile has been updated",
+        },
+      });
     },
     onError: (_) => {
-      notify("An error occurred. Please try again", {
+      notify("crm.profile.update_error", {
         type: "error",
+        messageArgs: {
+          _: "An error occurred. Please try again",
+        },
       });
     },
   });
 
   if (!identity) return null;
+  if (!data) return <Loading />;
 
   const handleOnSubmit = async (values: any) => {
     mutate(values);
@@ -63,7 +87,7 @@ export const ProfilePage = () => {
 
   return (
     <div className="max-w-lg mx-auto mt-8">
-      <Form onSubmit={handleOnSubmit} record={data}>
+      <Form key={data.id} onSubmit={handleOnSubmit} record={data}>
         <ProfileForm isEditMode={isEditMode} setEditMode={setEditMode} />
       </Form>
     </div>
@@ -79,6 +103,7 @@ const ProfileForm = ({
 }) => {
   const notify = useNotify();
   const isSqlWebApi = Boolean(import.meta.env.VITE_SQLWEBAPI_URL);
+  const translate = useTranslate();
   const record = useRecordContext<Sale>();
   const { identity, refetch } = useGetIdentity();
   const { isDirty } = useFormState();
@@ -88,7 +113,11 @@ const ProfileForm = ({
     mutationKey: ["updatePassword"],
     mutationFn: async () => {
       if (!identity) {
-        throw new Error("Record not found");
+        throw new Error(
+          translate("crm.profile.record_not_found", {
+            _: "Record not found",
+          }),
+        );
       }
       return dataProvider.updatePassword(identity.id);
     },
@@ -96,11 +125,19 @@ const ProfileForm = ({
       if (result == null) {
         return;
       }
-      notify(
-        isSqlWebApi
-          ? "Password updated successfully"
-          : "A reset password email has been sent to your email address",
-      );
+      if (isSqlWebApi) {
+        notify("crm.profile.password_updated", {
+          messageArgs: {
+            _: "Password updated successfully",
+          },
+        });
+        return;
+      }
+      notify("crm.profile.password_reset_sent", {
+        messageArgs: {
+          _: "A reset password email has been sent to your email address",
+        },
+      });
     },
     onError: (e) => {
       notify(`${e}`, {
@@ -113,16 +150,29 @@ const ProfileForm = ({
     mutationKey: ["signup"],
     mutationFn: async (data: SalesFormData) => {
       if (!record) {
-        throw new Error("Record not found");
+        throw new Error(
+          translate("crm.profile.record_not_found", {
+            _: "Record not found",
+          }),
+        );
       }
       return dataProvider.salesUpdate(record.id, data);
     },
     onSuccess: () => {
       refetch();
-      notify("Your profile has been updated");
+      notify("crm.profile.updated", {
+        messageArgs: {
+          _: "Your profile has been updated",
+        },
+      });
     },
     onError: () => {
-      notify("An error occurred. Please try again.");
+      notify("crm.profile.update_error", {
+        type: "error",
+        messageArgs: {
+          _: "An error occurred. Please try again.",
+        },
+      });
     },
   });
   if (!identity) return null;
@@ -141,7 +191,7 @@ const ProfileForm = ({
         <CardContent>
           <div className="mb-4 flex flex-row justify-between">
             <h2 className="text-xl font-semibold text-muted-foreground">
-              Profile
+              {translate("crm.profile.title")}
             </h2>
           </div>
 
@@ -152,9 +202,12 @@ const ProfileForm = ({
               onSave={handleAvatarUpdate}
               linkPosition="right"
             />
-            <TextRender source="first_name" isEditMode={isEditMode} />
-            <TextRender source="last_name" isEditMode={isEditMode} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <TextRender source="first_name" isEditMode={isEditMode} />
+              <TextRender source="last_name" isEditMode={isEditMode} />
+            </div>
             <TextRender source="email" isEditMode={isEditMode} />
+            <LanguageSelector />
           </div>
 
           <div className="flex flex-row justify-end gap-2">
@@ -165,7 +218,7 @@ const ProfileForm = ({
                   type="button"
                   onClick={handleClickOpenPasswordChange}
                 >
-                  Change password
+                  {translate("crm.profile.password.change")}
                 </Button>
               </>
             )}
@@ -177,13 +230,15 @@ const ProfileForm = ({
               className="flex items-center"
             >
               {isEditMode ? <CircleX /> : <Pencil />}
-              {isEditMode ? "Cancel" : "Edit"}
+              {isEditMode
+                ? translate("ra.action.cancel")
+                : translate("ra.action.edit")}
             </Button>
 
             {isEditMode && (
               <Button type="submit" disabled={!isDirty} variant="outline">
                 <Save />
-                Save
+                {translate("ra.action.save")}
               </Button>
             )}
           </div>
@@ -194,13 +249,13 @@ const ProfileForm = ({
           <CardContent>
             <div className="space-y-4 justify-between">
               <h2 className="text-xl font-semibold text-muted-foreground">
-                Inbound email
+                {translate("crm.profile.inbound.title")}
               </h2>
               <p className="text-sm text-muted-foreground">
-                You can start sending emails to your server's inbound email
-                address, e.g. by adding it to the
-                <b> Cc: </b> field. Atomic CRM will process the emails and add
-                notes to the corresponding contacts.
+                {translate("crm.profile.inbound.description", {
+                  _: "You can start sending emails to your server's inbound email address, e.g. by adding it to the Cc: field. Atomic CRM will process the emails and add notes to the corresponding contacts.",
+                  field: "Cc:",
+                })}
               </p>
               <CopyPaste />
             </div>
@@ -211,24 +266,65 @@ const ProfileForm = ({
   );
 };
 
+const LanguageSelector = () => {
+  const translate = useTranslate();
+  const locales = useLocales();
+  const [locale, setLocale] = useLocaleState();
+
+  if (locales.length <= 1) {
+    return null;
+  }
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs text-muted-foreground">
+        {translate("crm.language")}
+      </p>
+      <Select value={locale} onValueChange={setLocale}>
+        <SelectTrigger className="w-full">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {locales.map((language) => (
+            <SelectItem key={language.locale} value={language.locale}>
+              {language.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+};
+
 const TextRender = ({
   source,
   isEditMode,
+  className,
 }: {
   source: string;
   isEditMode: boolean;
+  className?: string;
 }) => {
+  const label = `resources.sales.fields.${source}`;
   if (isEditMode) {
-    return <TextInput source={source} helperText={false} />;
+    return (
+      <TextInput
+        source={source}
+        label={label}
+        helperText={false}
+        className={className}
+      />
+    );
   }
   return (
-    <div className="m-2">
-      <RecordField source={source} />
+    <div className={className}>
+      <RecordField source={source} label={label} />
     </div>
   );
 };
 
 const CopyPaste = () => {
+  const translate = useTranslate();
   const [copied, setCopied] = useState(false);
   const handleCopy = () => {
     setCopied(true);
@@ -254,7 +350,11 @@ const CopyPaste = () => {
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          <p>{copied ? "Copied!" : "Copy"}</p>
+          <p>
+            {copied
+              ? translate("crm.common.copied")
+              : translate("crm.common.copy")}
+          </p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
