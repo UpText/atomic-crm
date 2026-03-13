@@ -25,6 +25,7 @@ import type { ConfigurationContextValue } from "../../root/ConfigurationContext"
 import { getActivityLog } from "../commons/activity";
 import { getCompanyAvatar } from "../commons/getCompanyAvatar";
 import { getContactAvatar } from "../commons/getContactAvatar";
+import { ensureValidStoredAuth } from "./token";
 
 
 
@@ -32,8 +33,8 @@ export const httpClient = async (
   url: string,
   options: fetchUtils.Options = {},
 ) => {
-  const auth = localStorage.getItem("auth");
-  const token = auth ? JSON.parse(auth).token : null;
+  const auth = ensureValidStoredAuth();
+  const token = auth?.token ?? null;
   const user = {
     token: token ? `Bearer ${token}` : "",
     authenticated: !!token,

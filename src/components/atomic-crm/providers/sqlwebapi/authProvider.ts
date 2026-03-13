@@ -1,5 +1,9 @@
 // src/authProvider.ts
 
+import {
+  clearStoredAuth,
+  ensureValidStoredAuth,
+} from "./token";
 
 const ensureTrailingSlash = (url: string) => (url.endsWith("/") ? url : `${url}/`);
 const USER_STORAGE_KEY = "user";
@@ -117,15 +121,14 @@ export const authProvider = {
 
   // Called on navigation to guard routes
   async checkAuth() {
-    return localStorage.getItem("auth") ? Promise.resolve() : Promise.reject();
+    return ensureValidStoredAuth() ? Promise.resolve() : Promise.reject();
   },
 
   // Called when a dataProvider call returns an error
   async checkError(error: { status?: number }) {
     const s = error?.status;
     if (s === 401 || s === 403) {
-      localStorage.removeItem("auth");
-      localStorage.removeItem(USER_STORAGE_KEY);
+      clearStoredAuth();
       return Promise.reject();
     }
     return Promise.resolve();
@@ -133,12 +136,12 @@ export const authProvider = {
 
   // Log out
   async logout() {
-    localStorage.removeItem("auth");
-    localStorage.removeItem(USER_STORAGE_KEY);
+    clearStoredAuth();
   },
 
   // Optional: user identity for the app bar avatar/name
   async getIdentity() {
+    ensureValidStoredAuth();
     const user = JSON.parse(localStorage.getItem(USER_STORAGE_KEY) || "null");
     const auth = JSON.parse(localStorage.getItem("auth") || "{}");
     return {
@@ -153,6 +156,7 @@ export const authProvider = {
 
   // Optional: roles/permissions
   async getPermissions() {
+    ensureValidStoredAuth();
     const user = JSON.parse(localStorage.getItem(USER_STORAGE_KEY) || "null");
     const auth = JSON.parse(localStorage.getItem("auth") || "{}");
     if (typeof user?.administrator === "boolean") {

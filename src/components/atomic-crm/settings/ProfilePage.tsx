@@ -2,7 +2,6 @@ import { useMutation } from "@tanstack/react-query";
 import { CircleX, Copy, Pencil, Save } from "lucide-react";
 import {
   Form,
-  Loading,
   useDataProvider,
   useGetIdentity,
   useGetOne,
@@ -14,6 +13,7 @@ import {
 } from "ra-core";
 import { useState } from "react";
 import { useFormState } from "react-hook-form";
+import { Loading } from "@/components/admin/loading";
 import { RecordField } from "@/components/admin/record-field";
 import { TextInput } from "@/components/admin/text-input";
 import { Button } from "@/components/ui/button";
