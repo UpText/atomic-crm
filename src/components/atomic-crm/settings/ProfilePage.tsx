@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/tooltip";
 
 import ImageEditorField from "../misc/ImageEditorField";
+import { hasSqlWebApiUrl } from "../providers/sqlwebapi/runtimeConfig";
 import type { CrmDataProvider } from "../providers/types";
 import type { Sale, SalesFormData } from "../types";
 
@@ -102,7 +103,7 @@ const ProfileForm = ({
   setEditMode: (value: boolean) => void;
 }) => {
   const notify = useNotify();
-  const isSqlWebApi = Boolean(import.meta.env.VITE_SQLWEBAPI_URL);
+  const isSqlWebApi = hasSqlWebApiUrl();
   const translate = useTranslate();
   const record = useRecordContext<Sale>();
   const { identity, refetch } = useGetIdentity();

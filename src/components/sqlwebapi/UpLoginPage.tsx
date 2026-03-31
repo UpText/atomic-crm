@@ -8,7 +8,7 @@ type UpLoginPageProps = {
   redirectTo?: string;
 };
 
-const SERVICE_STORAGE_KEY = "up.login.service";
+const TENANT_STORAGE_KEY = "up.login.tenant";
 const EMAIL_STORAGE_KEY = "up.login.email";
 const REMEMBER_STORAGE_KEY = "up.login.remember";
 
@@ -21,10 +21,7 @@ export const UpLoginPage = (props: UpLoginPageProps) => {
 
     return {
       rememberMe: localStorage.getItem(REMEMBER_STORAGE_KEY) !== "false",
-      service:
-        localStorage.getItem(SERVICE_STORAGE_KEY) ??
-        import.meta.env.VITE_SERVICE ??
-        "",
+      tenant: localStorage.getItem(TENANT_STORAGE_KEY) ?? "",
       email: localStorage.getItem(EMAIL_STORAGE_KEY) ?? "",
     };
   }, []);
@@ -32,12 +29,12 @@ export const UpLoginPage = (props: UpLoginPageProps) => {
   return (
     <LoginPage
       {...props}
-      showServiceField
+      showTenantField
       defaultValues={defaultValues}
       additionalFields={
         <BooleanInput
           source="rememberMe"
-          label="Remember service and email"
+          label="Remember tenant and email"
           helperText={false}
         />
       }
@@ -48,23 +45,23 @@ export const UpLoginPage = (props: UpLoginPageProps) => {
       }
       transformSubmitValues={(values) => {
         const rememberMe = Boolean(values.rememberMe);
-        const service = String(values.service ?? "").trim();
+        const tenant = String(values.tenant ?? "").trim();
         const email = String(values.email ?? "").trim();
 
         if (typeof window !== "undefined") {
           localStorage.setItem(REMEMBER_STORAGE_KEY, String(rememberMe));
           if (rememberMe) {
-            localStorage.setItem(SERVICE_STORAGE_KEY, service);
+            localStorage.setItem(TENANT_STORAGE_KEY, tenant);
             localStorage.setItem(EMAIL_STORAGE_KEY, email);
           } else {
-            localStorage.removeItem(SERVICE_STORAGE_KEY);
+            localStorage.removeItem(TENANT_STORAGE_KEY);
             localStorage.removeItem(EMAIL_STORAGE_KEY);
           }
         }
 
         return {
           ...values,
-          service,
+          tenant,
           email,
         };
       }}

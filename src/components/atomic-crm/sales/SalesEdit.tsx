@@ -14,6 +14,7 @@ import { SaveButton } from "@/components/admin/form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
+import { hasSqlWebApiUrl } from "../providers/sqlwebapi/runtimeConfig";
 import type { CrmDataProvider } from "../providers/types";
 import type { Sale, SalesFormData } from "../types";
 import { SalesInputs } from "./SalesInputs";
@@ -47,7 +48,7 @@ function EditToolbar({
 
 export function SalesEdit() {
   const { record } = useEditController();
-  const isSqlWebApi = Boolean(import.meta.env.VITE_SQLWEBAPI_URL);
+  const isSqlWebApi = hasSqlWebApiUrl();
 
   const dataProvider = useDataProvider<CrmDataProvider>();
   const notify = useNotify();

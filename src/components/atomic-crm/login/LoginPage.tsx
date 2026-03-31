@@ -20,7 +20,7 @@ import { SSOAuthButton } from "./SSOAuthButton";
  */
 type LoginPageProps = {
   redirectTo?: string;
-  showServiceField?: boolean;
+  showTenantField?: boolean;
   defaultValues?: FieldValues;
   transformSubmitValues?: (values: FieldValues) => FieldValues;
   additionalFields?: ReactNode;
@@ -36,7 +36,7 @@ export const LoginPage = (props: LoginPageProps) => {
   } = useConfigurationContext();
   const {
     redirectTo,
-    showServiceField = false,
+    showTenantField = false,
     defaultValues,
     transformSubmitValues,
     additionalFields,
@@ -133,10 +133,10 @@ export const LoginPage = (props: LoginPageProps) => {
                 onSubmit={handleSubmit}
                 defaultValues={defaultValues}
               >
-                {showServiceField ? (
+                {showTenantField ? (
                   <TextInput
-                    label="Service"
-                    source="service"
+                    label="Tenant"
+                    source="tenant"
                     validate={required()}
                   />
                 ) : null}

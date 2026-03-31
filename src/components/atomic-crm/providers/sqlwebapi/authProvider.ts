@@ -1,12 +1,18 @@
 // src/authProvider.ts
 
+import { canAccess } from "../commons/canAccess";
 import {
   clearStoredAuth,
   ensureValidStoredAuth,
 } from "./token";
+import {
+  getSqlWebApiService,
+  getSqlWebApiUrl,
+} from "./runtimeConfig";
 
 const ensureTrailingSlash = (url: string) => (url.endsWith("/") ? url : `${url}/`);
 const USER_STORAGE_KEY = "user";
+const TENANT_STORAGE_KEY = "tenant";
 
 const pickToken = (auth: any) =>
   auth?.token ??
@@ -40,17 +46,47 @@ const extractFirstRecord = (payload: any) => {
   return null;
 };
 
+const isAdministrator = (value: unknown) => {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const normalizedValue = value.trim().toLowerCase();
+    if (normalizedValue === "true") {
+      return true;
+    }
+    if (normalizedValue === "false") {
+      return false;
+    }
+  }
+
+  return false;
+};
+
+const getStoredUser = () =>
+  JSON.parse(localStorage.getItem(USER_STORAGE_KEY) || "null");
+
+const getStoredAuth = () => JSON.parse(localStorage.getItem("auth") || "{}");
+
+const getConfiguredService = () => {
+  const service = getSqlWebApiService()?.trim();
+  if (!service) {
+    throw new Error("Missing SQLWebAPI service configuration");
+  }
+  return service;
+};
+
 const fetchUserByEmail = async ({
   baseUrl,
-  service,
   email,
   token,
 }: {
   baseUrl: string;
-  service: string;
   email: string;
   token: string | null;
 }) => {
+  const service = getConfiguredService();
   const params = new URLSearchParams({
     filter: JSON.stringify({ email }),
     range: JSON.stringify([0, 0]),
@@ -78,33 +114,37 @@ export const authProvider = {
     username,
     email,
     password,
-    service,
+    tenant,
   }: {
     username?: string;
     email?: string;
     password: string;
-    service: string;
+    tenant: string;
   }) {
-    const swa = import.meta.env.VITE_SQLWEBAPI_URL ?? "";
+    const swa = getSqlWebApiUrl() ?? "";
     const baseUrl = ensureTrailingSlash(swa);
-    const normalizedService = service.trim();
+    const service = getConfiguredService();
     const loginEmail = String(email ?? username ?? "").trim();
-    const res = await fetch(`${baseUrl}${normalizedService}/login`, {
+    const normalizedTenant = String(tenant ?? "").trim();
+    const res = await fetch(`${baseUrl}${service}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: username ?? email, password }),
+      body: JSON.stringify({
+        username: username ?? email,
+        password,
+        tenant: normalizedTenant,
+      }),
     });
     if (!res.ok) throw new Error("Invalid credentials");
     const rawAuth = await res.json();
-    const auth = { ...rawAuth, token: pickToken(rawAuth) };
+    const auth = { ...rawAuth, token: pickToken(rawAuth), tenant: normalizedTenant };
     localStorage.setItem("auth", JSON.stringify(auth));
-    localStorage.setItem("service", normalizedService);
+    localStorage.setItem(TENANT_STORAGE_KEY, normalizedTenant);
 
     if (loginEmail) {
       try {
         const user = await fetchUserByEmail({
           baseUrl,
-          service: normalizedService,
           email: loginEmail,
           token: auth.token,
         });
@@ -137,13 +177,14 @@ export const authProvider = {
   // Log out
   async logout() {
     clearStoredAuth();
+    localStorage.removeItem(TENANT_STORAGE_KEY);
   },
 
   // Optional: user identity for the app bar avatar/name
   async getIdentity() {
     ensureValidStoredAuth();
-    const user = JSON.parse(localStorage.getItem(USER_STORAGE_KEY) || "null");
-    const auth = JSON.parse(localStorage.getItem("auth") || "{}");
+    const user = getStoredUser();
+    const auth = getStoredAuth();
     return {
       id: user?.id ?? auth.user?.id,
       fullName:
@@ -157,12 +198,18 @@ export const authProvider = {
   // Optional: roles/permissions
   async getPermissions() {
     ensureValidStoredAuth();
-    const user = JSON.parse(localStorage.getItem(USER_STORAGE_KEY) || "null");
-    const auth = JSON.parse(localStorage.getItem("auth") || "{}");
-    if (typeof user?.administrator === "boolean") {
-      return user.administrator ? "admin" : "user";
+    const user = getStoredUser();
+    const auth = getStoredAuth();
+    if (user != null) {
+      return isAdministrator(user.administrator) ? "admin" : "user";
     }
     return auth.user?.role ?? "user";
+  },
+
+  async canAccess(params) {
+    ensureValidStoredAuth();
+    const role = await this.getPermissions();
+    return canAccess(role, params);
   },
 };
 

@@ -1,0 +1,20 @@
+CREATE TABLE [crm].[sales] (
+    [id] [int] IDENTITY(1,1) NOT NULL,
+    [tenant] [nvarchar](255) NOT NULL CONSTRAINT [DF_sales_tenant] DEFAULT ('default'),
+    [user_id] [varchar](50) NULL,
+    [email] [nvarchar](320) NULL,
+    [first_name] [nvarchar](100) NULL,
+    [last_name] [nvarchar](100) NULL,
+    [administrator] [bit] NOT NULL CONSTRAINT [DF_sales_admin] DEFAULT ((0)),
+    [disabled] [bit] NOT NULL CONSTRAINT [DF_sales_disabled] DEFAULT ((0)),
+    [avatar_src] [nvarchar](2048) NULL,
+    [avatar_title] [nvarchar](255) NULL,
+    [avatar_path] [nvarchar](1024) NULL,
+    [avatar_type] [nvarchar](128) NULL,
+    [created_at] [datetime2](0) NOT NULL CONSTRAINT [DF_sales_created_at] DEFAULT (sysutcdatetime()),
+    [updated_at] [datetime2](0) NOT NULL CONSTRAINT [DF_sales_updated_at] DEFAULT (sysutcdatetime()),
+    [PasswordHash] [nvarchar](100) NULL,
+    CONSTRAINT [PK_sales] PRIMARY KEY CLUSTERED ([id] ASC),
+    CONSTRAINT [UQ_sales_email] UNIQUE NONCLUSTERED ([tenant] ASC, [email] ASC),
+    CONSTRAINT [FK_sales_tenant] FOREIGN KEY ([tenant]) REFERENCES [crm].[tenants] ([name])
+);

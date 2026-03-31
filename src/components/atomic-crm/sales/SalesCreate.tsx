@@ -11,12 +11,13 @@ import { SimpleForm } from "@/components/admin/simple-form";
 import { TextInput } from "@/components/admin/text-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+import { hasSqlWebApiUrl } from "../providers/sqlwebapi/runtimeConfig";
 import type { CrmDataProvider } from "../providers/types";
 import type { SalesFormData } from "../types";
 import { SalesInputs } from "./SalesInputs";
 
 export function SalesCreate() {
-  const isSqlWebApi = Boolean(import.meta.env.VITE_SQLWEBAPI_URL);
+  const isSqlWebApi = hasSqlWebApiUrl();
   const dataProvider = useDataProvider<CrmDataProvider>();
   const notify = useNotify();
   const translate = useTranslate();

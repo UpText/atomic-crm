@@ -25,6 +25,10 @@ import type { ConfigurationContextValue } from "../../root/ConfigurationContext"
 import { getActivityLog } from "../commons/activity";
 import { getCompanyAvatar } from "../commons/getCompanyAvatar";
 import { getContactAvatar } from "../commons/getContactAvatar";
+import {
+  getSqlWebApiService,
+  getSqlWebApiUrl,
+} from "./runtimeConfig";
 import { ensureValidStoredAuth } from "./token";
 
 
@@ -57,19 +61,17 @@ export const httpClient = async (
 };
 
 
-if (import.meta.env.VITE_SQLWEBAPI_URL === undefined) {
+const swa = getSqlWebApiUrl() ?? "";
+const service = getSqlWebApiService() ?? "";
+
+if (!swa) {
   throw new Error("Please set the VITE_SQLWEBAPI_URL environment variable");
 }
-if (import.meta.env.VITE_SERVICE === undefined) {
+if (!service) {
   throw new Error(
-    "Please set the VITE_SERVICEenvironment variable",
+    "Please set the VITE_SQLWEBAPI_SERVICE environment variable",
   );
 }
-
-// Use optional chaining to avoid type errors
-const swa = import.meta.env.VITE_SQLWEBAPI_URL ?? "";
-const service = import.meta.env.VITE_SERVICE ?? "";
-
 
 const baseDataProvider = simpleRestProvider(swa + "/" + service, httpClient);
 

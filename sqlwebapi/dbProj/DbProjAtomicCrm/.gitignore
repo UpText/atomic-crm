@@ -1,0 +1,6 @@
+bin/
+obj/
+ImportSnapshot/
+Generated/
+.env.deploy
+.env.local.deploy
