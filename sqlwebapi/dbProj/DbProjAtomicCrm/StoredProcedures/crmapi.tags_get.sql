@@ -8,7 +8,7 @@ CREATE PROCEDURE [crmapi].[tags_get](
     @auth_tenant NVARCHAR(255) = NULL
 ) AS
 BEGIN
-    SELECT id, tenant, name, color, COUNT(*) OVER() AS total_rows
+    SELECT id, name, color, COUNT(*) OVER() AS total_rows
     FROM crm.tags
     WHERE tenant = @auth_tenant
       AND (@ID IS NULL OR @ID = id)

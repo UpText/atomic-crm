@@ -16,7 +16,6 @@ BEGIN
 
     SELECT
         id,
-        tenant,
         deal_id,
         sales_id,
         date,

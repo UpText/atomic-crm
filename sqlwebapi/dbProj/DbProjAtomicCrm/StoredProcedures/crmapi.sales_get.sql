@@ -12,7 +12,6 @@ BEGIN
 
     SELECT
         id,
-        tenant,
         user_id,
         email,
         first_name,

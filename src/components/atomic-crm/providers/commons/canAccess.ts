@@ -22,6 +22,10 @@ export const canAccess = <
     return false;
   }
 
+  if (params.resource === "tenants") {
+    return false;
+  }
+
   // Non admins can't access the configuration resource
   if (params.resource === "configuration") {
     return false;

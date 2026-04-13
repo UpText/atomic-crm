@@ -39,6 +39,7 @@
       <DefaultValue></DefaultValue>
       <Value>$(SqlCmdVar__6)</Value>
     </SqlCmdVariable>
+    <PreDeploy Include="PreDeploy.sql" />
     <PostDeploy Include="PostDeploy.sql" />
   </ItemGroup>
   <Target Name="BeforeBuild">

@@ -4,7 +4,7 @@ CREATE PROCEDURE [crmapi].[configuration_get](
 )
 AS
 BEGIN
-    SELECT id, tenant, config, updated_at, updated_by
+    SELECT id, config, updated_at, updated_by
     FROM crm.configuration
     WHERE tenant = @auth_tenant
       AND (@ID IS NULL OR @ID = id);

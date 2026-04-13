@@ -8,6 +8,14 @@ BEGIN
     IF @tenant IS NULL OR LTRIM(RTRIM(@tenant)) = ''
         RETURN 401;
 
+    IF EXISTS (
+        SELECT 1
+        FROM crm.tenants
+        WHERE name = @tenant
+          AND active = 0
+    )
+        RETURN 403;
+
     IF NOT EXISTS (
         SELECT 1
         FROM crm.sales

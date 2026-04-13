@@ -9,7 +9,8 @@ CREATE PROCEDURE [crmapi].[sales_post](
     @avatar_title nvarchar(255) = NULL,
     @avatar_path nvarchar(1024) = NULL,
     @avatar_type nvarchar(128) = NULL,
-    @auth_tenant NVARCHAR(255) = NULL
+    @auth_tenant NVARCHAR(255) = NULL,
+    @passwordhash NVARCHAR(100) = NULL
 ) AS
 BEGIN
     INSERT INTO crm.sales (
@@ -23,7 +24,8 @@ BEGIN
         avatar_src,
         avatar_title,
         avatar_path,
-        avatar_type
+        avatar_type,
+        passwordhash
     )
     VALUES (
         @auth_tenant,
@@ -36,8 +38,9 @@ BEGIN
         @avatar_src,
         @avatar_title,
         @avatar_path,
-        @avatar_type
-    );
+        @avatar_type,
+        @passwordhash
+   );
 
     DECLARE @NEWID AS VARCHAR(max) = SCOPE_IDENTITY();
     EXEC crmapi.sales_get @ID = @NEWID, @auth_tenant = @auth_tenant;

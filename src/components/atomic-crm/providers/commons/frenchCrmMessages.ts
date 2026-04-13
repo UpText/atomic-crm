@@ -220,6 +220,24 @@ export const frenchCrmMessages = {
       },
       invalid_date: "Date invalide",
     },
+    tenants: {
+      name: "Tenant |||| Tenants",
+      fields: {
+        name: "Tenant",
+        display_name: "Nom affiché",
+        active: "Actif",
+        activated_at: "Activé le",
+        deactivated_at: "Désactivé le",
+        created_at: "Créé le",
+        admin_email: "E-mail admin",
+        password: "Mot de passe admin",
+      },
+      action: {
+        create: "Créer un tenant",
+        edit: "Modifier le tenant",
+        new: "Nouveau tenant",
+      },
+    },
     notes: {
       name: "Note |||| Notes",
       forcedCaseName: "Note",
@@ -425,21 +443,26 @@ export const frenchCrmMessages = {
     import: {
       action: {
         download_error_report: "Téléchargez le rapport d'erreur",
+        export: "Exporter",
         import: "Importer",
         import_another: "Importer un autre fichier",
       },
       error: {
         unable: "Impossible d'importer ce fichier.",
+        unable_export: "Impossible d'exporter les données.",
       },
       idle: {
         description_1:
           "Vous pouvez importer des ventes, des entreprises, des contacts, des entreprises, des notes et des tâches.",
         description_2:
           "Les données doivent se trouver dans un fichier JSON correspondant à l'exemple suivant :",
+        description_3:
+          "Vous pouvez aussi exporter les données actuelles au format JSON compatible avec l'import.",
       },
       status: {
         all_success: "Tous les enregistrements ont été importés avec succès.",
         complete: "Importation terminée.",
+        export_complete: "Export terminé.",
         failed: "Échoué",
         imported: "Importé",
         in_progress: "Import en cours, veuillez ne pas quitter cette page.",

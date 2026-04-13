@@ -214,6 +214,10 @@
           "type": "registry:component"
         },
         {
+          "path": "src/components/atomic-crm/providers/sqlwebapi/runtimeConfig.ts",
+          "type": "registry:component"
+        },
+        {
           "path": "src/components/atomic-crm/providers/sqlwebapi/index.ts",
           "type": "registry:component"
         },

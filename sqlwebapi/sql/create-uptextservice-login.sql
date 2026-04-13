@@ -21,7 +21,7 @@ IF NOT EXISTS (
 )
 BEGIN
     CREATE LOGIN [uptextservice]
-        WITH PASSWORD = 'CHANGE_THIS_PASSWORD';
+        WITH PASSWORD = 'ServicePasswd123!'
 END
 GO
 

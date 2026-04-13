@@ -16,7 +16,7 @@ BEGIN
     DECLARE @due_date_lt datetime2(3) = TRY_CONVERT(datetime2(3), CONVERT(datetimeoffset(3), JSON_VALUE(@filter, N'$."due_date@lt"')));
     DECLARE @due_date_eq datetime2(3) = TRY_CONVERT(datetime2(3), CONVERT(datetimeoffset(3), JSON_VALUE(@filter, N'$."due_date@eq"')));
 
-    SELECT id, tenant, contact_id, sales_id, type, text, due_date, done_date, COUNT(*) OVER() AS total_rows
+    SELECT id, contact_id, sales_id, type, text, due_date, done_date, COUNT(*) OVER() AS total_rows
     FROM crm.tasks
     WHERE tenant = @auth_tenant
       AND (@ID IS NULL OR @ID = id)

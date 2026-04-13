@@ -1,18 +1,32 @@
-import { Import, Settings, User, Users } from "lucide-react";
-import { CanAccess, useTranslate, useUserMenu } from "ra-core";
+import { Building2, Download, Import, Settings, User, Users } from "lucide-react";
+import {
+  CanAccess,
+  useNotify,
+  usePermissions,
+  useTranslate,
+  useUserMenu,
+} from "ra-core";
 import { Link, matchPath, useLocation } from "react-router";
 import { RefreshButton } from "@/components/admin/refresh-button";
 import { ThemeModeToggle } from "@/components/admin/theme-mode-toggle";
 import { UserMenu } from "@/components/admin/user-menu";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
+import { useExportToJson } from "../misc/useExportToJson";
 import { useConfigurationContext } from "../root/ConfigurationContext";
 import { ImportPage } from "../misc/ImportPage";
+import { hasSqlWebApiUrl } from "../providers/sqlwebapi/runtimeConfig";
+import { getStoredAuth } from "../providers/sqlwebapi/token";
 
 const Header = () => {
   const { darkModeLogo, lightModeLogo, title } = useConfigurationContext();
   const location = useLocation();
   const translate = useTranslate();
+  const isSqlWebApi = hasSqlWebApiUrl();
+  const { permissions } = usePermissions();
+  const currentTenant = getStoredAuth()?.tenant;
+  const canManageTenants =
+    isSqlWebApi && currentTenant === "admin" && permissions === "admin";
 
   let currentPath: string | boolean = "/";
   if (matchPath("/", location.pathname)) {
@@ -87,9 +101,15 @@ const Header = () => {
                   <CanAccess resource="sales" action="list">
                     <UsersMenu />
                   </CanAccess>
+                  {canManageTenants ? (
+                    <CanAccess resource="tenants" action="list">
+                      <TenantsMenu />
+                    </CanAccess>
+                  ) : null}
                   <CanAccess resource="configuration" action="edit">
                     <SettingsMenu />
                   </CanAccess>
+                  {permissions === "admin" ? <ExportDataMenuItem /> : null}
                   <ImportFromJsonMenuItem />
                 </UserMenu>
               </div>
@@ -170,6 +190,22 @@ const SettingsMenu = () => {
   );
 };
 
+const TenantsMenu = () => {
+  const translate = useTranslate();
+  const userMenuContext = useUserMenu();
+  if (!userMenuContext) {
+    throw new Error("<TenantsMenu> must be used inside <UserMenu>");
+  }
+  return (
+    <DropdownMenuItem asChild onClick={userMenuContext.onClose}>
+      <Link to="/tenants" className="flex items-center gap-2">
+        <Building2 />
+        {translate("resources.tenants.name", { smart_count: 2 })}
+      </Link>
+    </DropdownMenuItem>
+  );
+};
+
 const ImportFromJsonMenuItem = () => {
   const translate = useTranslate();
   const userMenuContext = useUserMenu();
@@ -182,6 +218,41 @@ const ImportFromJsonMenuItem = () => {
         <Import />
         {translate("crm.header.import_data")}
       </Link>
+    </DropdownMenuItem>
+  );
+};
+
+const ExportDataMenuItem = () => {
+  const translate = useTranslate();
+  const notify = useNotify();
+  const userMenuContext = useUserMenu();
+  const [exportState, exportFile] = useExportToJson();
+
+  if (!userMenuContext) {
+    throw new Error("<ExportDataMenuItem> must be used inside <UserMenu>");
+  }
+
+  return (
+    <DropdownMenuItem
+      onClick={() => {
+        void exportFile()
+          .then(() => {
+            notify("crm.import.status.export_complete", {
+              messageArgs: { _: "Export complete." },
+            });
+          })
+          .catch((error) => {
+            notify(error.message || "Unable to export data.", {
+              type: "error",
+            });
+          });
+        userMenuContext.onClose();
+      }}
+      disabled={exportState.status === "exporting"}
+      className="flex items-center gap-2"
+    >
+      <Download />
+      {translate("crm.import.action.export")}
     </DropdownMenuItem>
   );
 };

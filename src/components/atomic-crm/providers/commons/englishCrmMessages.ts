@@ -216,6 +216,24 @@ export const englishCrmMessages = {
       },
       invalid_date: "Invalid date",
     },
+    tenants: {
+      name: "Tenant |||| Tenants",
+      fields: {
+        name: "Tenant",
+        display_name: "Display name",
+        active: "Active",
+        activated_at: "Activated at",
+        deactivated_at: "Deactivated at",
+        created_at: "Created at",
+        admin_email: "Admin email",
+        password: "Admin password",
+      },
+      action: {
+        create: "Create tenant",
+        edit: "Edit tenant",
+        new: "New Tenant",
+      },
+    },
     notes: {
       name: "Note |||| Notes",
       forcedCaseName: "Note",
@@ -418,21 +436,26 @@ export const englishCrmMessages = {
     import: {
       action: {
         download_error_report: "Download the error report",
+        export: "Export",
         import: "Import",
         import_another: "Import another file",
       },
       error: {
         unable: "Unable to import this file.",
+        unable_export: "Unable to export data.",
       },
       idle: {
         description_1:
           "You can import sales, companies, contacts, companies, notes, and tasks.",
         description_2:
           "Data must be in a JSON file matching the following sample:",
+        description_3:
+          "You can also export the current data set as an import-compatible JSON file.",
       },
       status: {
         all_success: "All records were imported successfully.",
         complete: "Import complete.",
+        export_complete: "Export complete.",
         failed: "Failed",
         imported: "Imported",
         in_progress:

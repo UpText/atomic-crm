@@ -20,7 +20,6 @@ BEGIN
 
     SELECT
         cn.id,
-        cn.tenant,
         cn.contact_id,
         cn.sales_id,
         cn.[date],

@@ -10,6 +10,16 @@ END;
 
 IF NOT EXISTS (
     SELECT 1
+    FROM [crm].[tenants]
+    WHERE [name] = N'admin'
+)
+BEGIN
+    INSERT INTO [crm].[tenants] ([name], [display_name])
+    VALUES (N'admin', N'Admin');
+END;
+
+IF NOT EXISTS (
+    SELECT 1
     FROM [crm].[buckets]
     WHERE [tenant] = N'default'
       AND [bucket_id] = N'attachments'
@@ -21,6 +31,17 @@ END;
 
 IF NOT EXISTS (
     SELECT 1
+    FROM [crm].[buckets]
+    WHERE [tenant] = N'admin'
+      AND [bucket_id] = N'attachments'
+)
+BEGIN
+    INSERT INTO [crm].[buckets] ([tenant], [bucket_id], [is_public])
+    VALUES (N'admin', N'attachments', 0);
+END;
+
+IF NOT EXISTS (
+    SELECT 1
     FROM [crm].[configuration]
     WHERE [tenant] = N'default'
       AND [id] = 1
@@ -28,6 +49,24 @@ IF NOT EXISTS (
 BEGIN
     INSERT INTO [crm].[configuration] ([tenant], [id], [config], [updated_by])
     VALUES (N'default', 1, N'{}', N'system');
+END;
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM [crm].[configuration]
+    WHERE [tenant] = N'admin'
+      AND [id] = 1
+)
+BEGIN
+    INSERT INTO [crm].[configuration] ([tenant], [id], [config], [updated_by])
+    SELECT
+        N'admin',
+        [id],
+        JSON_MODIFY([config], '$.title', N'Admin CRM'),
+        N'system'
+    FROM [crm].[configuration]
+    WHERE [tenant] = N'default'
+      AND [id] = 1;
 END;
 
 INSERT INTO [crm].[schema_deployments]

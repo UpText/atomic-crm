@@ -20,7 +20,6 @@ BEGIN
 
     SELECT
         id,
-        tenant,
         name,
         sector,
         size,

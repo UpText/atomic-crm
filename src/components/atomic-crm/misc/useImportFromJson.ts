@@ -249,6 +249,12 @@ export const useImportFromJson = (): [
         const { data } = await dataProvider.create("companies", {
           data: {
             name: dataToImport.name.trim(),
+            logo: dataToImport.logo_src
+              ? {
+                  src: dataToImport.logo_src,
+                  title: "Company logo",
+                }
+              : undefined,
             description: dataToImport.description?.trim(),
             city: dataToImport.city?.trim(),
             country: dataToImport.country?.trim(),
@@ -371,6 +377,7 @@ export const useImportFromJson = (): [
             linkedin_url: dataToImport.linkedin_url?.trim(),
             gender: gender || undefined,
             has_newsletter: !!dataToImport.has_newsletter,
+            status: dataToImport.status?.trim() || "new",
             company_id: dataToImport.company_id
               ? idsMaps.companies[dataToImport.company_id]
               : undefined,
@@ -460,8 +467,10 @@ export const useImportFromJson = (): [
         }
 
         const attachments: Array<
-          Omit<RAFile, "rawFile"> & {
-            rawFile: { name: string; type: string | null };
+          Partial<RAFile> & {
+            src: string;
+            title: string;
+            type?: string | null;
           }
         > = [];
         if (Array.isArray(dataToImport.attachments)) {
@@ -469,10 +478,7 @@ export const useImportFromJson = (): [
             attachments.push({
               src: file.url,
               title: file.name,
-              rawFile: {
-                name: file.name,
-                type: mime.getType(file.name.split(".").pop()!),
-              },
+              type: mime.getType(file.name.split(".").pop()!) ?? undefined,
             });
           }
         }
@@ -483,7 +489,8 @@ export const useImportFromJson = (): [
             sales_id: idsMaps.sales[dataToImport.sales_id] ?? currentSale.id,
             text: dataToImport.text,
             date: dataToImport.date,
-            attachments,
+            status: dataToImport.status ?? "cold",
+            attachments: attachments.length > 0 ? attachments : undefined,
           },
         });
         setState((old) => ({
@@ -559,6 +566,7 @@ export const useImportFromJson = (): [
           data: {
             contact_id: idsMaps.contacts[dataToImport.contact_id],
             sales_id: idsMaps.sales[dataToImport.sales_id] ?? currentSale.id,
+            type: dataToImport.type || "none",
             text: dataToImport.text,
             due_date: dataToImport.due_date || undefined,
             done_date: dataToImport.done_date || undefined,
@@ -592,7 +600,9 @@ export const useImportFromJson = (): [
 
     let currentTask: Promise<any> | null = null;
     let currentBatch: Array<Promise<void>> = [];
-    const BATCH_SIZE = 50;
+    // SQLWebAPI is sensitive to large parallel write bursts during import.
+    // Keep the batch small so the service stays responsive across environments.
+    const BATCH_SIZE = 5;
 
     const parser = new JSONParser({
       paths: [
@@ -714,6 +724,7 @@ const isSale = (data: any): data is SaleImport =>
 type CompanyImport = {
   id: number;
   name: string;
+  logo_src?: string;
   sales_id?: number;
   description?: string;
   city?: string;
@@ -752,6 +763,7 @@ type ContactImport = {
   avatar?: string;
   gender?: string;
   has_newsletter?: boolean;
+  status?: string;
   emails: Array<{ email: string; type: string }>;
   phones: Array<{ number: string; type: string }>;
   tags: Array<string>;
@@ -770,6 +782,7 @@ type NoteImport = {
   sales_id: number;
   text: string;
   date: string;
+  status?: string;
   attachments: Array<{ url: string; name: string }>;
   created_at?: string;
   updated_at?: string;
@@ -787,6 +800,7 @@ const isNote = (data: any): data is NoteImport =>
 type TaskImport = {
   contact_id: number;
   sales_id: number;
+  type?: string;
   text: string;
   due_date?: string;
   done_date?: string;

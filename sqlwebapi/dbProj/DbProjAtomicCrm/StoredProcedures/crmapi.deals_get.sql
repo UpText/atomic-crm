@@ -17,7 +17,6 @@ BEGIN
 
     SELECT
         id,
-        tenant,
         name,
         company_id,
         category,

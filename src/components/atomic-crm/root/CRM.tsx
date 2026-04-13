@@ -30,6 +30,7 @@ import {
   dataProvider as defaultDataProvider,
 } from "../providers/supabase";
 import sales from "../sales";
+import tenants from "../tenant";
 import { ProfilePage } from "../settings/ProfilePage";
 import { SettingsPage } from "../settings/SettingsPage";
 import {
@@ -56,6 +57,7 @@ import { ContactListMobile } from "../contacts/ContactList.tsx";
 import { ContactShow } from "../contacts/ContactShow.tsx";
 import { CompanyShow } from "../companies/CompanyShow.tsx";
 import { NoteShowPage } from "../notes/NoteShowPage.tsx";
+import { hasSqlWebApiUrl } from "../providers/sqlwebapi/runtimeConfig";
 
 const defaultStore = localStorageStore(undefined, "CRM");
 
@@ -216,6 +218,7 @@ export const CRM = ({
 };
 
 const DesktopAdmin = (props: CoreAdminProps) => {
+  const isSqlWebApi = hasSqlWebApiUrl();
   return (
     <Admin layout={Layout} dashboard={Dashboard} {...props}>
       <CustomRoutes noLayout>
@@ -244,6 +247,7 @@ const DesktopAdmin = (props: CoreAdminProps) => {
       <Resource name="deal_notes" />
       <Resource name="tasks" />
       <Resource name="sales" {...sales} />
+      {isSqlWebApi ? <Resource name="tenants" {...tenants} /> : null}
       <Resource name="tags" />
     </Admin>
   );

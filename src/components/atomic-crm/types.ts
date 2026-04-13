@@ -48,6 +48,25 @@ export type Sale = {
   password?: string;
 } & Pick<RaRecord, "id">;
 
+export type Tenant = {
+  name: string;
+  display_name?: string;
+  active: boolean;
+  activated_at?: string;
+  deactivated_at?: string;
+  created_at?: string;
+  admin_email?: string;
+} & Pick<RaRecord, "id">;
+
+export type TenantFormData = {
+  tenant?: string;
+  name?: string;
+  display_name?: string;
+  active?: boolean;
+  admin_email?: string;
+  password?: string;
+};
+
 export type Company = {
   name: string;
   logo: RAFile;
