@@ -90,12 +90,7 @@ export const NoteShowPage = () => {
         <div className="mb-4">
           <div className="flex items-center space-x-2 w-full text-sm text-muted-foreground">
             <span>
-              {translate(
-                isCurrentUser
-                  ? "resources.notes.you_added"
-                  : "resources.notes.author_added",
-                { name: salesName },
-              )}{" "}
+              {isCurrentUser ? translate("resources.notes.me") : salesName}{" "}
             </span>
             {note.status && <Status status={note.status} />}
             <div className="flex-1" />
@@ -103,11 +98,7 @@ export const NoteShowPage = () => {
           </div>
         </div>
 
-        {note.text && (
-          <Markdown className="text-sm [&_p]:leading-5 [&_p]:my-4 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&_blockquote]:my-2 [&_blockquote]:text-muted-foreground [&_a]:text-primary [&_a]:underline [&_a:hover]:no-underline">
-            {note.text}
-          </Markdown>
-        )}
+        {note.text && <Markdown className="text-sm">{note.text}</Markdown>}
 
         {note.attachments && (
           <div className="mt-4">

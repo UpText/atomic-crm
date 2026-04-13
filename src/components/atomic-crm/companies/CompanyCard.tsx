@@ -1,4 +1,4 @@
-import { DollarSign } from "lucide-react";
+import { Handshake } from "lucide-react";
 import { Link } from "react-router";
 import {
   useCreatePath,
@@ -51,11 +51,11 @@ export const CompanyCard = (props: { record?: Company }) => {
           </div>
           {record.nb_deals ? (
             <div className="flex items-center ml-2 gap-0.5">
-              <DollarSign className="w-4 h-4 text-muted-foreground" />
+              <Handshake className="w-4 h-4 text-muted-foreground" />
               <span className="text-sm font-medium">{record.nb_deals}</span>
               <span className="text-xs text-muted-foreground">
                 {translate("resources.deals.name", {
-                  smart_count: record.nb_deals,
+                  smart_count: record.nb_deals ?? 0,
                   _: "Deal |||| Deals",
                 })}
               </span>

@@ -98,10 +98,6 @@
           "type": "registry:component"
         },
         {
-          "path": "src/components/atomic-crm/tasks/TaskCreateSheet.stories.tsx",
-          "type": "registry:component"
-        },
-        {
           "path": "src/components/atomic-crm/tasks/Task.tsx",
           "type": "registry:component"
         },
@@ -114,7 +110,19 @@
           "type": "registry:component"
         },
         {
+          "path": "src/components/atomic-crm/tags/useTags.ts",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/atomic-crm/tags/useCreateTag.ts",
+          "type": "registry:component"
+        },
+        {
           "path": "src/components/atomic-crm/tags/colors.ts",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/atomic-crm/tags/TagForm.tsx",
           "type": "registry:component"
         },
         {
@@ -155,6 +163,10 @@
         },
         {
           "path": "src/components/atomic-crm/simple-list/ListNoResults.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/atomic-crm/settings/SettingsPageMobile.tsx",
           "type": "registry:component"
         },
         {
@@ -374,7 +386,7 @@
           "type": "registry:component"
         },
         {
-          "path": "src/components/atomic-crm/notes/useAddInfinitePagination.ts",
+          "path": "src/components/atomic-crm/notes/noteModel.ts",
           "type": "registry:component"
         },
         {
@@ -399,6 +411,10 @@
         },
         {
           "path": "src/components/atomic-crm/notes/NoteShowPage.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/atomic-crm/notes/NoteInputsMobile.tsx",
           "type": "registry:component"
         },
         {
@@ -483,10 +499,6 @@
         },
         {
           "path": "src/components/atomic-crm/misc/ImportPage.tsx",
-          "type": "registry:component"
-        },
-        {
-          "path": "src/components/atomic-crm/misc/ImportFromJsonButton.tsx",
           "type": "registry:component"
         },
         {
@@ -682,11 +694,7 @@
           "type": "registry:component"
         },
         {
-          "path": "src/components/atomic-crm/contacts/exportToVCard.ts",
-          "type": "registry:component"
-        },
-        {
-          "path": "src/components/atomic-crm/contacts/contactGender.ts",
+          "path": "src/components/atomic-crm/contacts/contactModel.ts",
           "type": "registry:component"
         },
         {
@@ -730,10 +738,6 @@
           "type": "registry:component"
         },
         {
-          "path": "src/components/atomic-crm/contacts/ContactList.stories.tsx",
-          "type": "registry:component"
-        },
-        {
           "path": "src/components/atomic-crm/contacts/ContactInputs.tsx",
           "type": "registry:component"
         },
@@ -767,6 +771,10 @@
         },
         {
           "path": "src/components/atomic-crm/contacts/ContactAside.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/atomic-crm/contacts/BulkTagButton.tsx",
           "type": "registry:component"
         },
         {

@@ -25,13 +25,8 @@ import type { ConfigurationContextValue } from "../../root/ConfigurationContext"
 import { getActivityLog } from "../commons/activity";
 import { getCompanyAvatar } from "../commons/getCompanyAvatar";
 import { getContactAvatar } from "../commons/getContactAvatar";
-import {
-  getSqlWebApiService,
-  getSqlWebApiUrl,
-} from "./runtimeConfig";
+import { getSqlWebApiService, getSqlWebApiUrl } from "./runtimeConfig";
 import { ensureValidStoredAuth } from "./token";
-
-
 
 export const httpClient = async (
   url: string,
@@ -75,6 +70,23 @@ if (!service) {
 
 const baseDataProvider = simpleRestProvider(swa + "/" + service, httpClient);
 
+async function getIsInitialized() {
+  if ((getIsInitialized as any)._is_initialized_cache) {
+    return true;
+  }
+
+  const sales = await baseDataProvider.getList<Sale>("sales", {
+    filter: {},
+    pagination: { page: 1, perPage: 1 },
+    sort: { field: "id", order: "ASC" },
+  });
+  const isInitialized = sales.data.length > 0;
+  if (isInitialized) {
+    (getIsInitialized as any)._is_initialized_cache = true;
+  }
+  return isInitialized;
+}
+
 const processCompanyLogo = async (params: any) => {
   let logo = params.data.logo;
 
@@ -94,11 +106,11 @@ const processCompanyLogo = async (params: any) => {
 };
 
 const processSaleAvatar = async <
-  T extends { avatar?: RAFile | Partial<RAFile> | null },
+  T extends { avatar?: string | RAFile | Partial<RAFile> | null },
 >(
   data: T,
 ): Promise<T> => {
-  if (!data.avatar) {
+  if (!data.avatar || typeof data.avatar === "string") {
     return data;
   }
 
@@ -160,27 +172,24 @@ const dataProviderWithCustomMethods = {
   },
 
   async signUp({ email, password, first_name, last_name }: SignUpData) {
-    const response = await simpleRestProvider.call.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          first_name,
-          last_name,
-        },
+    const response = await baseDataProvider.create("sales", {
+      data: {
+        email,
+        password,
+        first_name,
+        last_name,
       },
     });
 
-    if (!response.data?.user || response.error) {
-      console.error("signUp.error", response.error);
-      throw new Error(response?.error?.message || "Failed to create account");
+    if (!response.data) {
+      throw new Error("Failed to create account");
     }
 
     // Update the is initialized cache
-    getIsInitialized._is_initialized_cache = true;
+    (getIsInitialized as any)._is_initialized_cache = true;
 
     return {
-      id: response.data.user.id,
+      id: response.data.id,
       email,
       password,
     };
@@ -196,9 +205,14 @@ const dataProviderWithCustomMethods = {
     id: Identifier,
     data: Partial<Omit<SalesFormData, "password">>,
   ) {
+    const { data: previousData } = await baseDataProvider.getOne<Sale>(
+      "sales",
+      { id },
+    );
     const rdata = await baseDataProvider.update("sales", {
       id,
       data: await processSaleAvatar(data),
+      previousData,
     });
 
     return rdata;
@@ -218,12 +232,17 @@ const dataProviderWithCustomMethods = {
       throw new Error("Password cannot be empty");
     }
 
+    const { data: previousData } = await baseDataProvider.getOne<Sale>(
+      "sales",
+      { id },
+    );
     const response = await baseDataProvider.update("sales_password", {
       id,
       data: {
         id,
         password: normalizedPassword,
       },
+      previousData,
     });
 
     return response;

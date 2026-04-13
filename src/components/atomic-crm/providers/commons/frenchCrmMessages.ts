@@ -60,6 +60,9 @@ export const frenchCrmMessages = {
         create_item: "Créer %{item}",
         create_label: "Commencez à taper pour créer une nouvelle entreprise",
       },
+      filters: {
+        only_mine: "Seulement les entreprises que je gère",
+      },
     },
     contacts: {
       name: "Contact |||| Contacts",
@@ -100,6 +103,7 @@ export const frenchCrmMessages = {
         added_on: "Ajouté le %{date}",
         followed_by: "Suivi par %{name}",
         followed_by_you: "Suivi par vous",
+        status_none: "Aucun",
       },
       position_at: "%{title} chez",
       position_at_company: "%{title} chez %{company}",
@@ -140,6 +144,21 @@ export const frenchCrmMessages = {
       },
       list: {
         error_loading: "Erreur lors du chargement des contacts",
+      },
+      bulk_tag: {
+        action: "Étiqueter",
+        back: "Retour aux étiquettes",
+        create_description:
+          "Créez une nouvelle étiquette et appliquez-la aux contacts sélectionnés.",
+        description:
+          "Choisissez une étiquette existante ou créez-en une pour les contacts sélectionnés.",
+        empty:
+          "Aucune étiquette pour le moment. Créez-en une pour étiqueter les contacts sélectionnés.",
+        error: "Impossible d'ajouter l'étiquette aux contacts",
+        noop: "Les contacts sélectionnés ont déjà cette étiquette",
+        success:
+          "Étiquette ajoutée à %{smart_count} contact |||| Étiquette ajoutée à %{smart_count} contacts",
+        title: "Ajouter une étiquette aux contacts",
       },
       merge: {
         action: "Fusionner avec un autre contact",
@@ -266,7 +285,7 @@ export const frenchCrmMessages = {
       empty: "Aucune note pour l'instant",
       author_added: "%{name} a ajouté une note",
       you_added: "Vous avez ajouté une note",
-      me: 'Moi',
+      me: "Moi",
       list: {
         error_loading: "Erreur lors du chargement des notes",
       },
@@ -279,6 +298,12 @@ export const frenchCrmMessages = {
         add_note: "Ajouter une note",
         options_hint: "(joindre des fichiers ou modifier les détails)",
         show_options: "Afficher les options",
+      },
+      actions: {
+        attach_document: "Joindre un document",
+      },
+      validation: {
+        note_or_attachment_required: "Une note ou une pièce jointe est requise",
       },
     },
     sales: {
@@ -366,7 +391,13 @@ export const frenchCrmMessages = {
     },
   },
   crm: {
+    action: {
+      reset_password: "Réinitialiser le mot de passe",
+    },
     auth: {
+      first_name: "Prénom",
+      last_name: "Nom",
+      confirm_password: "Confirmer le mot de passe",
       confirmation_required:
         "Veuillez suivre le lien que nous venons de vous envoyer par email pour confirmer votre compte.",
       recovery_email_sent:
@@ -478,6 +509,7 @@ export const frenchCrmMessages = {
       dark_mode_logo: "Logo du mode sombre",
       deals: {
         categories: "Catégories",
+        currency: "Devise",
         pipeline_help:
           "Sélectionnez les étapes d'affaire à considérer comme des affaires dans le pipeline.",
         pipeline_statuses: "Statuts des pipelines",
@@ -494,6 +526,7 @@ export const frenchCrmMessages = {
       tasks: {
         types: "Types",
       },
+      preferences: "Préférences",
       title: "Paramètres",
       app_title: "Titre de l'application",
       sections: {
@@ -512,6 +545,7 @@ export const frenchCrmMessages = {
     },
     theme: {
       dark: "Sombre",
+      label: "Thème",
       light: "Clair",
       system: "Système",
     },
@@ -524,6 +558,11 @@ export const frenchCrmMessages = {
         description:
           "Vous pouvez commencer à envoyer des e-mails vers l'adresse de réception de votre serveur, par exemple en l'ajoutant au champ %{field}. Atomic CRM traitera les e-mails et ajoutera des notes aux contacts correspondants.",
         title: "E-mail entrant",
+      },
+      mcp: {
+        title: "Serveur MCP",
+        description:
+          "Utilisez cette URL pour connecter votre assistant IA aux données de votre CRM via le Model Context Protocol (MCP).",
       },
       password: {
         change: "Changer le mot de passe",

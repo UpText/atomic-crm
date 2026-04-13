@@ -1,13 +1,14 @@
 import { useState } from "react";
 import {
+  InfiniteListBase,
   RecordRepresentation,
   ShowBase,
   useShowContext,
   useTranslate,
 } from "ra-core";
+import type { ShowBaseProps } from "ra-core";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ReferenceField } from "@/components/admin/reference-field";
-import { ReferenceManyField } from "@/components/admin/reference-many-field";
 import { TextField } from "@/components/admin/text-field";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -21,8 +22,9 @@ import { MobileContent } from "../layout/MobileContent";
 import { CompanyAvatar } from "../companies/CompanyAvatar";
 import { NoteCreate, NotesIterator, NotesIteratorMobile } from "../notes";
 import { NoteCreateSheet } from "../notes/NoteCreateSheet";
-import { ContactEditSheet } from "./ContactEditSheet";
 import { TagsListEdit } from "./TagsListEdit";
+import { ContactEditSheet } from "./ContactEditSheet";
+import { ContactStatusSelector } from "./ContactInputs";
 import { ContactPersonalInfo } from "./ContactPersonalInfo";
 import { ContactBackgroundInfo } from "./ContactBackgroundInfo";
 import { ContactTasksList } from "./ContactTasksList";
@@ -31,7 +33,7 @@ import { Avatar } from "./Avatar";
 import { ContactAside } from "./ContactAside";
 import { MobileBackButton } from "../misc/MobileBackButton";
 
-export const ContactShow = () => {
+export const ContactShow = (props: ShowBaseProps = {}) => {
   const isMobile = useIsMobile();
 
   return (
@@ -45,6 +47,7 @@ export const ContactShow = () => {
             }
           : undefined,
       }}
+      {...props}
     >
       {isMobile ? <ContactShowContentMobile /> : <ContactShowContent />}
     </ShowBase>
@@ -57,6 +60,8 @@ const ContactShowContentMobile = () => {
   const [noteCreateOpen, setNoteCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   if (isPending || !record) return null;
+
+  const taskCount = record.nb_tasks ?? 0;
 
   return (
     <>
@@ -84,10 +89,10 @@ const ContactShowContentMobile = () => {
           variant="ghost"
           size="icon"
           className="rounded-full"
+          aria-label={translate("ra.action.edit")}
           onClick={() => setEditOpen(true)}
         >
           <Pencil className="size-5" />
-          <span className="sr-only">{translate("ra.action.edit")}</span>
         </Button>
       </MobileHeader>
       <MobileContent>
@@ -135,7 +140,7 @@ const ContactShowContentMobile = () => {
             </TabsTrigger>
             <TabsTrigger value="tasks">
               {translate("crm.common.task_count", {
-                smart_count: record.nb_tasks,
+                smart_count: taskCount ?? 0,
               })}
             </TabsTrigger>
             <TabsTrigger value="details">
@@ -144,10 +149,13 @@ const ContactShowContentMobile = () => {
           </TabsList>
 
           <TabsContent value="notes" className="mt-2">
-            <ReferenceManyField
-              target="contact_id"
-              reference="contact_notes"
+            <InfiniteListBase
+              resource="contact_notes"
+              filter={{ contact_id: record.id }}
               sort={{ field: "date", order: "DESC" }}
+              perPage={25}
+              disableSyncWithLocation
+              storeKey={false}
               empty={
                 <div className="flex flex-col items-center justify-center py-8 text-center">
                   <p className="text-muted-foreground mb-4">
@@ -163,18 +171,14 @@ const ContactShowContentMobile = () => {
               }
               loading={false}
               error={false}
-              queryOptions={
-                {
-                  onError: () => {
-                    /** override to hide notification as error case is handled by NotesIteratorMobile */
-                  },
-                  // We want infinite pagination so we need to disable placeHolder data to avoid flicker duplicating previous page before showing the new one
-                  placeholderData: null,
-                } as any // fixme: remove once https://github.com/marmelab/react-admin/pull/11166 is released
-              }
+              queryOptions={{
+                onError: () => {
+                  /** override to hide notification as error case is handled by NotesIteratorMobile */
+                },
+              }}
             >
               <NotesIteratorMobile contactId={record.id} showStatus />
-            </ReferenceManyField>
+            </InfiniteListBase>
           </TabsContent>
 
           <TabsContent value="tasks" className="mt-4">
@@ -183,6 +187,15 @@ const ContactShowContentMobile = () => {
 
           <TabsContent value="details" className="mt-4">
             <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold">
+                  {translate("resources.notes.fields.status")}
+                </h3>
+                <Separator />
+                <div className="mt-3">
+                  <ContactStatusSelector />
+                </div>
+              </div>
               <div>
                 <h3 className="text-lg font-semibold">
                   {translate(
@@ -267,22 +280,19 @@ const ContactShowContent = () => {
                 </ReferenceField>
               </div>
             </div>
-            <ReferenceManyField
-              target="contact_id"
-              reference="contact_notes"
+            <InfiniteListBase
+              resource="contact_notes"
+              filter={{ contact_id: record.id }}
               sort={{ field: "date", order: "DESC" }}
+              perPage={25}
+              disableSyncWithLocation
+              storeKey={false}
               empty={
                 <NoteCreate reference="contacts" showStatus className="mt-4" />
               }
-              queryOptions={{
-                // We want infinite pagination so we need to disable placeHolder data to avoid flicker duplicating previous page before showing the new one
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                //@ts-expect-error
-                placeholderData: null,
-              }}
             >
               <NotesIterator reference="contacts" showStatus />
-            </ReferenceManyField>
+            </InfiniteListBase>
           </CardContent>
         </Card>
       </div>

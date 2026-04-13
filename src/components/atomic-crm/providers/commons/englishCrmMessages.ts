@@ -57,6 +57,9 @@ export const englishCrmMessages = {
         create_item: "Create %{item}",
         create_label: "Start typing to create a new company",
       },
+      filters: {
+        only_mine: "Only companies I manage",
+      },
     },
     contacts: {
       name: "Contact |||| Contacts",
@@ -97,6 +100,7 @@ export const englishCrmMessages = {
         added_on: "Added on %{date}",
         followed_by: "Followed by %{name}",
         followed_by_you: "Followed by you",
+        status_none: "None",
       },
       position_at: "%{title} at",
       position_at_company: "%{title} at %{company}",
@@ -136,6 +140,20 @@ export const englishCrmMessages = {
       },
       list: {
         error_loading: "Error loading contacts",
+      },
+      bulk_tag: {
+        action: "Tag",
+        back: "Back to tags",
+        create_description:
+          "Create a new tag and apply it to the selected contacts.",
+        description:
+          "Choose an existing tag or create a new one for the selected contacts.",
+        empty: "No tags yet. Create one to tag the selected contacts.",
+        error: "Failed to add tag to contacts",
+        noop: "Selected contacts already have this tag",
+        success:
+          "Tag added to %{smart_count} contact |||| Tag added to %{smart_count} contacts",
+        title: "Add tag to contacts",
       },
       merge: {
         action: "Merge with another contact",
@@ -262,7 +280,7 @@ export const englishCrmMessages = {
       empty: "No notes yet",
       author_added: "%{name} added a note",
       you_added: "You added a note",
-      me: 'Me',
+      me: "Me",
       list: {
         error_loading: "Error loading notes",
       },
@@ -275,6 +293,12 @@ export const englishCrmMessages = {
         add_note: "Add a note",
         options_hint: "(attach files, or change details)",
         show_options: "Show options",
+      },
+      actions: {
+        attach_document: "Attach document",
+      },
+      validation: {
+        note_or_attachment_required: "A note or an attachment is required",
       },
     },
     sales: {
@@ -361,7 +385,13 @@ export const englishCrmMessages = {
     },
   },
   crm: {
+    action: {
+      reset_password: "Reset Password",
+    },
     auth: {
+      first_name: "First name",
+      last_name: "Last name",
+      confirm_password: "Confirm password",
       confirmation_required:
         "Please follow the link we just sent you by email to confirm your account.",
       recovery_email_sent:
@@ -472,6 +502,7 @@ export const englishCrmMessages = {
       dark_mode_logo: "Dark Mode Logo",
       deals: {
         categories: "Categories",
+        currency: "Currency",
         pipeline_help:
           "Select which deal stages should count as pipeline deals.",
         pipeline_statuses: "Pipeline Statuses",
@@ -488,6 +519,7 @@ export const englishCrmMessages = {
       tasks: {
         types: "Types",
       },
+      preferences: "Preferences",
       title: "Settings",
       app_title: "App Title",
       sections: {
@@ -506,6 +538,7 @@ export const englishCrmMessages = {
     },
     theme: {
       dark: "Dark",
+      label: "Theme",
       light: "Light",
       system: "System",
     },
@@ -518,6 +551,11 @@ export const englishCrmMessages = {
         description:
           "You can start sending emails to your server's inbound email address, e.g. by adding it to the %{field} field. Atomic CRM will process the emails and add notes to the corresponding contacts.",
         title: "Inbound email",
+      },
+      mcp: {
+        title: "MCP Server",
+        description:
+          "Use this URL to connect your AI assistant to your CRM data via the Model Context Protocol (MCP).",
       },
       password: {
         change: "Change password",

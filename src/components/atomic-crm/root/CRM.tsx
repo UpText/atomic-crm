@@ -1,10 +1,10 @@
-import {
-  type CoreAdminProps,
-  CustomRoutes,
-  localStorageStore,
-  Resource,
-  type AuthProvider,
+import type {
+  CoreAdminProps,
+  AuthProvider,
+  DashboardComponent,
+  LayoutComponent,
 } from "ra-core";
+import { CustomRoutes, localStorageStore, Resource } from "ra-core";
 import { useEffect, useMemo } from "react";
 import { Route } from "react-router";
 import { QueryClient } from "@tanstack/react-query";
@@ -26,11 +26,12 @@ import { SignupPage } from "../login/SignupPage";
 import { ConfirmationRequired } from "../login/ConfirmationRequired";
 import { ImportPage } from "../misc/ImportPage";
 import {
-  authProvider as defaultAuthProvider,
-  dataProvider as defaultDataProvider,
+  getAuthProvider as defaultAuthProviderBuilder,
+  getDataProvider as defaultDataProviderBuilder,
 } from "../providers/supabase";
 import sales from "../sales";
 import tenants from "../tenant";
+import { SettingsPageMobile } from "../settings/SettingsPageMobile";
 import { ProfilePage } from "../settings/ProfilePage";
 import { SettingsPage } from "../settings/SettingsPage";
 import {
@@ -40,6 +41,7 @@ import {
 import type { CrmDataProvider } from "../providers/types";
 import {
   defaultCompanySectors,
+  defaultCurrency,
   defaultDarkModeLogo,
   defaultDealCategories,
   defaultDealPipelineStatuses,
@@ -49,7 +51,7 @@ import {
   defaultTaskTypes,
   defaultTitle,
 } from "./defaultConfiguration";
-import { i18nProvider } from "../providers/commons/i18nProvider";
+import { i18nProvider as defaulti18nProvider } from "../providers/commons/i18nProvider";
 import { StartPage } from "../login/StartPage.tsx";
 import { useIsMobile } from "@/hooks/use-mobile.ts";
 import { MobileTasksList } from "../tasks/MobileTasksList.tsx";
@@ -64,8 +66,11 @@ const defaultStore = localStorageStore(undefined, "CRM");
 export type CRMProps = {
   dataProvider?: CrmDataProvider;
   authProvider?: AuthProvider;
+  i18nProvider?: CoreAdminProps["i18nProvider"];
   disableTelemetry?: boolean;
   store?: CoreAdminProps["store"];
+  dashboard?: DashboardComponent;
+  layout?: LayoutComponent;
 } & Partial<ConfigurationContextValue>;
 
 /**
@@ -76,6 +81,7 @@ export type CRMProps = {
  * seeds the store with any custom prop values for backwards compatibility.
  *
  * @param {LabeledValue[]} companySectors - The list of company sectors used in the application.
+ * @param {string} currency - The ISO 4217 currency code used to format monetary values (e.g. "USD", "EUR", "GBP").
  * @param {RaThemeOptions} darkTheme - The theme to use when the application is in dark mode.
  * @param {LabeledValue[]} dealCategories - The categories of deals used in the application.
  * @param {string[]} dealPipelineStatuses - The statuses of deals in the pipeline used in the application.
@@ -109,6 +115,7 @@ export type CRMProps = {
  */
 export const CRM = ({
   companySectors = defaultCompanySectors,
+  currency = defaultCurrency,
   dealCategories = defaultDealCategories,
   dealPipelineStatuses = defaultDealPipelineStatuses,
   dealStages = defaultDealStages,
@@ -117,8 +124,9 @@ export const CRM = ({
   noteStatuses = defaultNoteStatuses,
   taskTypes = defaultTaskTypes,
   title = defaultTitle,
-  dataProvider = defaultDataProvider,
-  authProvider = defaultAuthProvider,
+  dataProvider = defaultDataProviderBuilder(),
+  authProvider = defaultAuthProviderBuilder(),
+  i18nProvider = defaulti18nProvider,
   store = defaultStore,
   googleWorkplaceDomain = import.meta.env.VITE_GOOGLE_WORKPLACE_DOMAIN,
   disableEmailPasswordAuthentication = import.meta.env
@@ -142,21 +150,25 @@ export const CRM = ({
 
   // Seed the store with CRM prop values if not already stored
   // (backwards compatibility for prop-based config)
-  if (!store.getItem(CONFIGURATION_STORE_KEY)) {
-    store.setItem(CONFIGURATION_STORE_KEY, {
-      companySectors,
-      dealCategories,
-      dealPipelineStatuses,
-      dealStages,
-      noteStatuses,
-      taskTypes,
-      title,
-      darkModeLogo,
-      lightModeLogo,
-      googleWorkplaceDomain,
-      disableEmailPasswordAuthentication,
-    } satisfies ConfigurationContextValue);
-  }
+  useEffect(() => {
+    if (!store.getItem(CONFIGURATION_STORE_KEY)) {
+      store.setItem(CONFIGURATION_STORE_KEY, {
+        companySectors,
+        currency,
+        dealCategories,
+        dealPipelineStatuses,
+        dealStages,
+        noteStatuses,
+        taskTypes,
+        title,
+        darkModeLogo,
+        lightModeLogo,
+        googleWorkplaceDomain,
+        disableEmailPasswordAuthentication,
+      } satisfies ConfigurationContextValue);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store]);
 
   const isMobile = useIsMobile();
 
@@ -217,10 +229,19 @@ export const CRM = ({
   );
 };
 
-const DesktopAdmin = (props: CoreAdminProps) => {
+const DesktopAdmin = (
+  props: CoreAdminProps & {
+    dashboard?: DashboardComponent;
+    layout?: LayoutComponent;
+  },
+) => {
   const isSqlWebApi = hasSqlWebApiUrl();
   return (
-    <Admin layout={Layout} dashboard={Dashboard} {...props}>
+    <Admin
+      layout={props.layout ?? Layout}
+      dashboard={props.dashboard ?? Dashboard}
+      {...props}
+    >
       <CustomRoutes noLayout>
         <Route path={SignupPage.path} element={<SignupPage />} />
         <Route
@@ -253,7 +274,12 @@ const DesktopAdmin = (props: CoreAdminProps) => {
   );
 };
 
-const MobileAdmin = (props: CoreAdminProps) => {
+const MobileAdmin = (
+  props: CoreAdminProps & {
+    dashboard?: DashboardComponent;
+    layout?: LayoutComponent;
+  },
+) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -276,8 +302,8 @@ const MobileAdmin = (props: CoreAdminProps) => {
     >
       <Admin
         queryClient={queryClient}
-        layout={MobileLayout}
-        dashboard={MobileDashboard}
+        layout={props.layout ?? MobileLayout}
+        dashboard={props.dashboard ?? MobileDashboard}
         {...props}
       >
         <CustomRoutes noLayout>
@@ -292,6 +318,12 @@ const MobileAdmin = (props: CoreAdminProps) => {
             element={<ForgotPasswordPage />}
           />
           <Route path={OAuthConsentPage.path} element={<OAuthConsentPage />} />
+        </CustomRoutes>
+        <CustomRoutes>
+          <Route
+            path={SettingsPageMobile.path}
+            element={<SettingsPageMobile />}
+          />
         </CustomRoutes>
         <Resource
           name="contacts"

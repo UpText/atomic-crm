@@ -5,7 +5,6 @@ import {
   useNotify,
   useRecordContext,
   useRedirect,
-  useTranslate,
 } from "ra-core";
 import type { SubmitHandler } from "react-hook-form";
 import { SimpleForm } from "@/components/admin/simple-form";
@@ -35,7 +34,6 @@ export function TenantEdit() {
   const dataProvider = useDataProvider<CrmDataProvider>();
   const notify = useNotify();
   const redirect = useRedirect();
-  const translate = useTranslate();
 
   const { mutate } = useMutation({
     mutationKey: ["tenantUpdate", record?.id],

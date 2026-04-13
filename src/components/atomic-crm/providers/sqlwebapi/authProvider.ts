@@ -206,7 +206,7 @@ export const authProvider = {
     return auth.user?.role ?? "user";
   },
 
-  async canAccess(params) {
+  async canAccess(params: any) {
     ensureValidStoredAuth();
     const role = await this.getPermissions();
     return canAccess(role, params);
