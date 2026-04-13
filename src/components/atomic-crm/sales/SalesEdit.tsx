@@ -1,0 +1,152 @@
+import { useMutation } from "@tanstack/react-query";
+import {
+  useDataProvider,
+  useEditController,
+  useNotify,
+  useRecordContext,
+  useRedirect,
+  useTranslate,
+} from "ra-core";
+import type { SubmitHandler } from "react-hook-form";
+import { SimpleForm } from "@/components/admin/simple-form";
+import { CancelButton } from "@/components/admin/cancel-button";
+import { SaveButton } from "@/components/admin/form";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+
+import { hasSqlWebApiUrl } from "../providers/sqlwebapi/runtimeConfig";
+import type { CrmDataProvider } from "../providers/types";
+import type { Sale, SalesFormData } from "../types";
+import { SalesInputs } from "./SalesInputs";
+
+function EditToolbar({
+  showChangePassword,
+  onChangePassword,
+  changePasswordDisabled,
+}: {
+  showChangePassword: boolean;
+  onChangePassword: () => void;
+  changePasswordDisabled: boolean;
+}) {
+  return (
+    <div className="flex justify-end gap-4">
+      {showChangePassword ? (
+        <Button
+          variant="outline"
+          type="button"
+          onClick={onChangePassword}
+          disabled={changePasswordDisabled}
+        >
+          Change password
+        </Button>
+      ) : null}
+      <CancelButton />
+      <SaveButton />
+    </div>
+  );
+}
+
+export function SalesEdit() {
+  const { record } = useEditController();
+  const isSqlWebApi = hasSqlWebApiUrl();
+
+  const dataProvider = useDataProvider<CrmDataProvider>();
+  const notify = useNotify();
+  const redirect = useRedirect();
+  const translate = useTranslate();
+
+  const { mutate } = useMutation({
+    mutationKey: ["signup"],
+    mutationFn: async (data: SalesFormData) => {
+      if (!record) {
+        throw new Error(
+          translate("resources.sales.edit.record_not_found", {
+            _: "Record not found",
+          }),
+        );
+      }
+      return dataProvider.salesUpdate(record.id, data);
+    },
+    onSuccess: () => {
+      redirect("/sales");
+      notify("resources.sales.edit.success", {
+        messageArgs: {
+          _: "User updated successfully",
+        },
+      });
+    },
+    onError: () => {
+      notify("resources.sales.edit.error", {
+        type: "error",
+        messageArgs: {
+          _: "An error occurred. Please try again.",
+        },
+      });
+    },
+  });
+
+  const onSubmit: SubmitHandler<SalesFormData> = async (data) => {
+    mutate(data);
+  };
+
+  const { mutate: updatePassword } = useMutation({
+    mutationKey: ["salesUpdatePassword", record?.id],
+    mutationFn: async () => {
+      if (!record) {
+        throw new Error("Record not found");
+      }
+      return dataProvider.updatePassword(record.id);
+    },
+    onSuccess: (result) => {
+      if (result == null) {
+        return;
+      }
+      notify(
+        isSqlWebApi
+          ? "Password updated successfully"
+          : "A reset password email has been sent to your email address",
+      );
+    },
+    onError: (error) => {
+      notify(error instanceof Error ? error.message : "Failed to update password", {
+        type: "error",
+      });
+    },
+  });
+
+  return (
+    <div className="max-w-lg w-full mx-auto mt-8">
+      <Card>
+        <CardContent>
+          <SimpleForm
+            toolbar={
+              <EditToolbar
+                showChangePassword={isSqlWebApi}
+                onChangePassword={() => updatePassword()}
+                changePasswordDisabled={!record}
+              />
+            }
+            onSubmit={onSubmit as SubmitHandler<any>}
+            record={record}
+          >
+            <SaleEditTitle />
+            <SalesInputs />
+          </SimpleForm>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+const SaleEditTitle = () => {
+  const record = useRecordContext<Sale>();
+  const translate = useTranslate();
+  if (!record) return null;
+  return (
+    <h2 className="text-lg font-semibold mb-4">
+      {translate("resources.sales.edit.title", {
+        name: `${record.first_name} ${record.last_name}`,
+      })}
+    </h2>
+  );
+};

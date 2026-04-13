@@ -1,0 +1,448 @@
+@baseUrl = http://localhost:7071
+@service = crmapi
+@url = {{baseUrl}}/swa/{{service}}
+@token = 
+@username = ole@oren.no
+@password = elo123
+@tenant = default
+
+
+### Health
+GET {{baseUrl}}/ping
+
+### Login
+# @name login
+POST {{url}}/login?username={{username}}&password={{password}}&tenant={{tenant}}
+
+
+### companies DELETE
+# Requires JWT claims: email, tenant
+DELETE {{url}}/companies/543
+Authorization: Bearer {{login.response.body.$.token}}
+
+### companies GET
+# Requires JWT claims: email, baseurl, tenant
+GET {{url}}/companies?first_row=0&last_row=1000
+Authorization: Bearer {{login.response.body.$.token}}
+
+### companies POST
+# Requires JWT claims: email, tenant
+POST {{url}}/companies
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "name": "sample",
+  "sector": "sample",
+  "size": 1,
+  "linkedin_url": "sample",
+  "website": "sample",
+  "phone_number": "sample",
+  "address": "sample",
+  "zipcode": "sample",
+  "city": "sample",
+  "state_abbr": "sample",
+  "country": "sample",
+  "description": "sample",
+  "revenue": "sample",
+  "tax_identifier": "sample",
+  "created_at": "2024-01-01T00:00:00Z",
+  "sales_id": 1,
+  "logo_src": "sample",
+  "logo_title": "sample",
+  "logo_path": "sample",
+  "logo_type": "sample",
+  "context_links": "sample"
+}
+
+### companies PUT
+# Requires JWT claims: email, tenant
+PUT {{url}}/companies/{{ID}}
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "name": "sample",
+  "sector": "sample",
+  "size": 1,
+  "linkedin_url": "sample",
+  "website": "sample",
+  "phone_number": "sample",
+  "address": "sample",
+  "zipcode": "sample",
+  "city": "sample",
+  "state_abbr": "sample",
+  "country": "sample",
+  "description": "sample",
+  "revenue": "sample",
+  "tax_identifier": "sample",
+  "created_at": "2024-01-01T00:00:00Z",
+  "sales_id": 1,
+  "logo": "sample",
+  "context_links": "sample"
+}
+
+### companies_summary GET
+# Requires JWT claims: baseurl, tenant
+GET {{url}}/companies_summary?first_row=0&last_row=1000
+Authorization: Bearer {{login.response.body.$.token}}
+
+### configuration GET
+# Requires JWT claims: tenant
+GET {{url}}/configuration
+Authorization: Bearer {{login.response.body.$.token}}
+
+### configuration PUT
+# Requires JWT claims: email, tenant
+PUT {{url}}/configuration/{{ID}}
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "config": "sample"
+}
+
+### contacts GET
+# Requires JWT claims: tenant
+GET {{url}}/contacts?first_row=0&last_row=1000
+Authorization: Bearer {{login.response.body.$.token}}
+
+### contacts POST
+# Requires JWT claims: tenant
+POST {{url}}/contacts
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "first_name": "sample",
+  "last_name": "sample",
+  "title": "sample",
+  "company_id": 1,
+  "sales_id": 1,
+  "linkedin_url": "sample",
+  "first_seen": "2024-01-01T00:00:00Z",
+  "last_seen": "2024-01-01T00:00:00Z",
+  "has_newsletter": true,
+  "gender": "sample",
+  "status": "sample",
+  "background": "sample",
+  "emails_jsonb": "sample",
+  "phones_jsonb": "sample",
+  "avatar_src": "sample",
+  "avatar_title": "sample",
+  "avatar_path": "sample",
+  "avatar_type": "sample"
+}
+
+### contacts PUT
+# Requires JWT claims: tenant
+PUT {{url}}/contacts/{{ID}}
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "first_name": "sample",
+  "last_name": "sample",
+  "title": "sample",
+  "company_id": 1,
+  "sales_id": 1,
+  "linkedin_url": "sample",
+  "first_seen": "2024-01-01T00:00:00Z",
+  "last_seen": "2024-01-01T00:00:00Z",
+  "has_newsletter": true,
+  "gender": "sample",
+  "status": "sample",
+  "background": "sample",
+  "email_jsonb": "sample",
+  "phone_jsonb": "sample",
+  "avatar_src": "sample",
+  "avatar_title": "sample",
+  "avatar_path": "sample",
+  "avatar_type": "sample",
+  "tags": "sample"
+}
+
+### contacts_summary GET
+# Requires JWT claims: tenant
+GET {{url}}/contacts_summary?first_row=0&last_row=1000
+Authorization: Bearer {{login.response.body.$.token}}
+
+### contact_notes DELETE
+# Requires JWT claims: tenant
+DELETE {{url}}/contact_notes/{{ID}}
+Authorization: Bearer {{login.response.body.$.token}}
+
+### contact_notes GET
+# Requires JWT claims: tenant
+GET {{url}}/contact_notes?first_row=0&last_row=1000
+Authorization: Bearer {{login.response.body.$.token}}
+
+### contact_notes POST
+# Requires JWT claims: tenant
+POST {{url}}/contact_notes
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "contact_id": 1,
+  "sales_id": 1,
+  "date": "2024-01-01T00:00:00Z",
+  "text": "sample",
+  "status": "sample",
+  "attachments": "sample"
+}
+
+### contact_notes PUT
+# Requires JWT claims: tenant
+PUT {{url}}/contact_notes/{{ID}}
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "contact_id": 1,
+  "sales_id": 1,
+  "date": "2024-01-01T00:00:00Z",
+  "text": "sample",
+  "status": "sample",
+  "attachments": "sample"
+}
+
+### deals GET
+# Requires JWT claims: tenant
+GET {{url}}/deals?first_row=0&last_row=1000
+Authorization: Bearer {{login.response.body.$.token}}
+
+### deals POST
+# Requires JWT claims: tenant
+POST {{url}}/deals
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "name": "sample",
+  "company_id": 1,
+  "category": "sample",
+  "stage": "sample",
+  "description": "sample",
+  "amount": 1.0,
+  "expected_closing_date": "2024-01-01T00:00:00Z",
+  "sales_id": 1,
+  "index": 1
+}
+
+### deals PUT
+# Requires JWT claims: tenant
+PUT {{url}}/deals/{{ID}}
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "name": "sample",
+  "company_id": 1,
+  "category": "sample",
+  "stage": "sample",
+  "description": "sample",
+  "amount": 1.0,
+  "expected_closing_date": "2024-01-01T00:00:00Z",
+  "sales_id": 1,
+  "index": 1
+}
+
+### deal_notes DELETE
+# Requires JWT claims: tenant
+DELETE {{url}}/deal_notes/{{ID}}
+Authorization: Bearer {{login.response.body.$.token}}
+
+### deal_notes GET
+# Requires JWT claims: tenant
+GET {{url}}/deal_notes?first_row=0&last_row=1000
+Authorization: Bearer {{login.response.body.$.token}}
+
+### deal_notes POST
+# Requires JWT claims: tenant
+POST {{url}}/deal_notes
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "deal_id": 1,
+  "sales_id": 1,
+  "date": "2024-01-01T00:00:00Z",
+  "text": "sample",
+  "attachments": "sample"
+}
+
+### deal_notes PUT
+# Requires JWT claims: tenant
+PUT {{url}}/deal_notes/{{ID}}
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "deal_id": 1,
+  "sales_id": 1,
+  "date": "2024-01-01T00:00:00Z",
+  "text": "sample",
+  "attachments": "sample"
+}
+
+### hello GET
+GET {{url}}/hello
+
+### objects GET
+GET {{url}}/objects
+
+### objects POST
+# Requires JWT claims: tenant
+POST {{url}}/objects
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "bucket_id": "sample",
+  "object_path": "sample",
+  "content_type": "sample",
+  "sha256_hex": "sample",
+  "data": "sample"
+}
+
+### sales GET
+# Requires JWT claims: tenant
+GET {{url}}/sales?first_row=0&last_row=1000
+Authorization: Bearer {{login.response.body.$.token}}
+
+### sales POST
+# Requires JWT claims: tenant
+POST {{url}}/sales
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "user_id": "sample",
+  "email": "admin@example.com",
+  "first_name": "sample",
+  "last_name": "sample",
+  "administrator": true,
+  "disabled": true,
+  "avatar_src": "sample",
+  "avatar_title": "sample",
+  "avatar_path": "sample",
+  "avatar_type": "sample",
+  "password": "admin123"
+}
+
+### sales PUT
+# Requires JWT claims: tenant
+PUT {{url}}/sales/{{ID}}
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "email": "admin@example.com",
+  "first_name": "sample",
+  "last_name": "sample",
+  "administrator": true,
+  "disabled": true,
+  "avatar": "sample"
+}
+
+### sales_password PUT
+# Requires JWT claims: email, tenant
+PUT {{url}}/sales_password/{{id}}
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "password": "admin123"
+}
+
+### tags GET
+# Requires JWT claims: tenant
+GET {{url}}/tags?first_row=0&last_row=1000
+Authorization: Bearer {{login.response.body.$.token}}
+
+### tags POST
+# Requires JWT claims: tenant
+POST {{url}}/tags
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "name": "sample",
+  "color": "sample"
+}
+
+### tasks GET
+# Requires JWT claims: tenant
+GET {{url}}/tasks?first_row=0&last_row=1000
+Authorization: Bearer {{login.response.body.$.token}}
+
+### tasks POST
+# Requires JWT claims: tenant
+POST {{url}}/tasks
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "contact_id": 1,
+  "sales_id": 1,
+  "type": "sample",
+  "text": "sample",
+  "due_date": "2024-01-01T00:00:00Z",
+  "done_date": "2024-01-01T00:00:00Z"
+}
+
+### tasks PUT
+# Requires JWT claims: tenant
+PUT {{url}}/tasks/{{ID}}
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "contact_id": 1,
+  "sales_id": 1,
+  "type": "sample",
+  "text": "sample",
+  "due_date": "2024-01-01T00:00:00Z",
+  "done_date": "2024-01-01T00:00:00Z"
+}
+
+### tenants DELETE
+# Requires JWT claims: tenant
+DELETE {{url}}/tenants/{{ID}}
+Authorization: Bearer {{login.response.body.$.token}}
+
+### tenants GET
+# Requires JWT claims: tenant
+GET {{url}}/tenants?first_row=0&last_row=1000
+Authorization: Bearer {{login.response.body.$.token}}
+
+### tenants POST
+POST {{url}}/tenants
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+  "tenant": "sample",
+  "admin_email": "sample",
+  "password": "admin123"
+}
+
+### tenants PUT
+# Requires JWT claims: tenant
+PUT {{url}}/tenants/{{ID}}
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "display_name": "sample",
+  "active": true
+}
+
+### tenants_cleanup POST
+# Requires JWT claims: tenant
+POST {{url}}/tenants_cleanup
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "ID": "sample"
+}
