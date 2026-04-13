@@ -42,6 +42,26 @@
           "type": "registry:component"
         },
         {
+          "path": "src/components/atomic-crm/tenant/index.ts",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/atomic-crm/tenant/TenantList.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/atomic-crm/tenant/TenantInputs.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/atomic-crm/tenant/TenantEdit.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/atomic-crm/tenant/TenantCreate.tsx",
+          "type": "registry:component"
+        },
+        {
           "path": "src/components/atomic-crm/tasks/tasksPredicate.ts",
           "type": "registry:component"
         },
@@ -415,6 +435,10 @@
         },
         {
           "path": "src/components/atomic-crm/misc/useImportFromJson.ts",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/atomic-crm/misc/useExportToJson.ts",
           "type": "registry:component"
         },
         {
