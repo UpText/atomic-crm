@@ -25,7 +25,13 @@ import type { ConfigurationContextValue } from "../../root/ConfigurationContext"
 import { getActivityLog } from "../commons/activity";
 import { getCompanyAvatar } from "../commons/getCompanyAvatar";
 import { getContactAvatar } from "../commons/getContactAvatar";
-import { getSqlWebApiService, getSqlWebApiUrl } from "./runtimeConfig";
+import {
+  buildSqlWebApiUrl,
+  getSqlWebApiBaseUrl,
+  getSqlWebApiService,
+  getSqlWebApiUrl,
+  resolveSqlWebApiAttachmentUrl,
+} from "./runtimeConfig";
 import { ensureValidStoredAuth } from "./token";
 
 export const httpClient = async (
@@ -68,7 +74,13 @@ if (!service) {
   );
 }
 
-const baseDataProvider = simpleRestProvider(swa + "/" + service, httpClient);
+const sqlWebApiBaseUrl = getSqlWebApiBaseUrl();
+
+if (!sqlWebApiBaseUrl) {
+  throw new Error("Failed to build the SQLWebAPI base URL");
+}
+
+const baseDataProvider = simpleRestProvider(sqlWebApiBaseUrl, httpClient);
 
 async function getIsInitialized() {
   if ((getIsInitialized as any)._is_initialized_cache) {
@@ -148,6 +160,30 @@ async function processContactAvatar(
   return { ...params, data: newData };
 }
 
+const noteResources = new Set(["contact_notes", "deal_notes"]);
+
+const normalizeAttachment = (attachment: RAFile): RAFile => ({
+  ...attachment,
+  src:
+    resolveSqlWebApiAttachmentUrl({
+      src: attachment.src,
+      path: attachment.path,
+    }) ?? attachment.src,
+});
+
+const normalizeNoteRecord = <T extends { attachments?: RAFile[] | null }>(
+  record: T,
+): T => {
+  if (!Array.isArray(record.attachments)) {
+    return record;
+  }
+
+  return {
+    ...record,
+    attachments: record.attachments.map(normalizeAttachment),
+  };
+};
+
 const dataProviderWithCustomMethods = {
   ...baseDataProvider,
   async getList(resource: string, params: GetListParams) {
@@ -158,7 +194,16 @@ const dataProviderWithCustomMethods = {
       return baseDataProvider.getList("contacts_summary", params);
     }
 
-    return baseDataProvider.getList(resource, params);
+    const response = await baseDataProvider.getList(resource, params);
+
+    if (!noteResources.has(resource)) {
+      return response;
+    }
+
+    return {
+      ...response,
+      data: response.data.map(normalizeNoteRecord),
+    };
   },
   async getOne(resource: string, params: any) {
     if (resource === "companies") {
@@ -168,7 +213,40 @@ const dataProviderWithCustomMethods = {
       return baseDataProvider.getOne("contacts_summary", params);
     }
 
-    return baseDataProvider.getOne(resource, params);
+    const response = await baseDataProvider.getOne(resource, params);
+
+    if (!noteResources.has(resource)) {
+      return response;
+    }
+
+    return {
+      ...response,
+      data: normalizeNoteRecord(response.data),
+    };
+  },
+  async create(resource: string, params: any) {
+    const response = await baseDataProvider.create(resource, params);
+
+    if (!noteResources.has(resource)) {
+      return response;
+    }
+
+    return {
+      ...response,
+      data: normalizeNoteRecord(response.data),
+    };
+  },
+  async update(resource: string, params: any) {
+    const response = await baseDataProvider.update(resource, params);
+
+    if (!noteResources.has(resource)) {
+      return response;
+    }
+
+    return {
+      ...response,
+      data: normalizeNoteRecord(response.data),
+    };
   },
 
   async signUp({ email, password, first_name, last_name }: SignUpData) {
@@ -507,10 +585,13 @@ const uploadToBucket = async (fi: RAFile) => {
 
   // //const { data } = supabase.storage.from("attachments").getPublicUrl(filePath);
 
-  fi.path = res.data.object_path;
+  const objectPath = res.data.object_path;
+  fi.path = objectPath;
 
-  const publicUrl = `${swa}/${service}/objects/attachments?object_path=${fi.path}`;
-  fi.src = publicUrl;
+  const publicUrl = buildSqlWebApiUrl("objects/attachments", {
+    object_path: objectPath,
+  });
+  fi.src = publicUrl ?? fi.src;
   fi.type = fi.rawFile.type;
   // // save MIME type
   // const mimeType = file.type;
