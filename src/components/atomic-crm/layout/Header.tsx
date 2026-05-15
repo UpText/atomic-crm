@@ -1,4 +1,12 @@
-import { Building2, Download, Import, Settings, User, Users } from "lucide-react";
+import {
+  Building2,
+  Download,
+  FileText,
+  Import,
+  Settings,
+  User,
+  Users,
+} from "lucide-react";
 import {
   CanAccess,
   useNotify,
@@ -12,6 +20,7 @@ import { ThemeModeToggle } from "@/components/admin/theme-mode-toggle";
 import { UserMenu } from "@/components/admin/user-menu";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
+import { ChangelogPage } from "../misc/ChangelogPage";
 import { useExportToJson } from "../misc/useExportToJson";
 import { useConfigurationContext } from "../root/ConfigurationContext";
 import { ImportPage } from "../misc/ImportPage";
@@ -111,6 +120,7 @@ const Header = () => {
                   </CanAccess>
                   {permissions === "admin" ? <ExportDataMenuItem /> : null}
                   <ImportFromJsonMenuItem />
+                  <ChangelogMenuItem />
                 </UserMenu>
               </div>
             </div>
@@ -253,6 +263,22 @@ const ExportDataMenuItem = () => {
     >
       <Download />
       {translate("crm.import.action.export")}
+    </DropdownMenuItem>
+  );
+};
+
+const ChangelogMenuItem = () => {
+  const translate = useTranslate();
+  const userMenuContext = useUserMenu();
+  if (!userMenuContext) {
+    throw new Error("<ChangelogMenuItem> must be used inside <UserMenu>");
+  }
+  return (
+    <DropdownMenuItem asChild onClick={userMenuContext.onClose}>
+      <Link to={ChangelogPage.path} className="flex items-center gap-2">
+        <FileText />
+        {translate("crm.changelog.title")}
+      </Link>
     </DropdownMenuItem>
   );
 };

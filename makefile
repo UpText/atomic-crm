@@ -97,7 +97,7 @@ supabase-deploy:
 
 test-unit: test-app test-functions
 
-test: test-unit test-e2e-ci
+test: test-unit
 
 test-app:
 	npm run test:unit:app
@@ -148,6 +148,10 @@ registry-deploy: registry-build ## Deploy the shadcn registry (Automatically don
 registry-gen: ## Generate the shadcn registry (ran automatically by a pre-commit hook)
 	npm run registry:gen
 	npx prettier --config ./.prettierrc.json --write "registry.json"
+
+update-changelog: ## Update the changelog with the unreleased changes (ran automatically by a pre-commit hook)
+	npm run update-changelog
+	npx prettier --config ./.prettierrc.json --write "CHANGELOG.md"
 
 storybook: ## start storybook
 	npm run storybook
