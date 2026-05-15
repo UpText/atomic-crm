@@ -38,12 +38,15 @@ BEGIN
         sales_id,
         JSON_QUERY((
             SELECT
-                @auth_baseurl +
-                SUBSTRING(
-                    logo_src,
-                    CHARINDEX('/', logo_src, CHARINDEX('//', logo_src) + 2),
-                    LEN(logo_src)
-                ) AS [src],
+                CASE
+                    WHEN logo_src IS NULL OR logo_src LIKE 'data:%' THEN logo_src
+                    ELSE @auth_baseurl +
+                        SUBSTRING(
+                            logo_src,
+                            CHARINDEX('/', logo_src, CHARINDEX('//', logo_src) + 2),
+                            LEN(logo_src)
+                        )
+                END AS [src],
                 logo_title AS [title],
                 logo_path AS [path],
                 logo_type AS [type]

@@ -31,7 +31,7 @@ BEGIN
     DECLARE @logo_title nvarchar(255) = JSON_VALUE(@logo, '$."title"');
     DECLARE @logo_path nvarchar(1024) = JSON_VALUE(@logo, '$."path"');
     DECLARE @logo_type nvarchar(128) = JSON_VALUE(@logo, '$."type"');
-    DECLARE @logo_src nvarchar(1024) = JSON_VALUE(@logo, '$."src"');
+    DECLARE @logo_src nvarchar(MAX) = JSON_VALUE(@logo, '$."src"');
 
     UPDATE crm.companies
     SET name = COALESCE(@name, name),

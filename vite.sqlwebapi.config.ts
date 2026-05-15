@@ -26,12 +26,12 @@ export default defineConfig({
   define: {
     "import.meta.env.VITE_IS_DEMO": JSON.stringify("true"),
     "import.meta.env.VITE_SQLWEBAPI_URL": JSON.stringify(
-      process.env.VITE_SQLWEBAPI_URL ?? "http://localhost:5092",
+      process.env.VITE_SQLWEBAPI_URL ?? "http://localhost:8081",
     ),
     "import.meta.env.VITE_SQLWEBAPI_SERVICE": JSON.stringify(
       process.env.VITE_SQLWEBAPI_SERVICE ??
         process.env.VITE_SERVICE ??
-        "crm2api",
+        "crmapi",
     ),
     "import.meta.env.VITE_SERVICE": JSON.stringify(
       process.env.VITE_SERVICE ?? "crmapi",

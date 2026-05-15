@@ -128,7 +128,7 @@ GO
 CREATE TABLE [dbo].[companies] (
     [id]                 INT             NOT NULL,
     [name]               NVARCHAR (255)  NOT NULL,
-    [logo_src]           NVARCHAR (255)  NULL,
+    [logo_src]           NVARCHAR (MAX)  NULL,
     [logo_title]         NVARCHAR (MAX)  NULL,
     [logo_path]          NVARCHAR (MAX)  NULL,
     [logo_type]          NVARCHAR (100)  NULL,

@@ -53,7 +53,7 @@ BEGIN
         @auth_tenant,
         @first_name,
         @last_name,
-        @title,
+        COALESCE(@title, N''),
         @company_id,
         @sales_id,
         @linkedin_url,

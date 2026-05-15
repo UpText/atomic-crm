@@ -25,7 +25,7 @@ BEGIN
         avatar_title,
         avatar_path,
         avatar_type,
-        passwordhash
+        PasswordHash
     )
     VALUES (
         @auth_tenant,

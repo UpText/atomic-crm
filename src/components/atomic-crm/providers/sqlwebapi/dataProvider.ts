@@ -104,8 +104,8 @@ const processCompanyLogo = async (params: any) => {
 
   if (typeof logo !== "object" || logo === null || !logo.src) {
     logo = await getCompanyAvatar(params.data);
-  } else if (logo.rawFile instanceof File) {
-    await uploadToBucket(logo);
+  } else if (logo.rawFile instanceof File || logo.src.startsWith("data:")) {
+    logo = await uploadToBucket(logo, { trimImageWhitespace: true });
   }
 
   return {
@@ -114,6 +114,23 @@ const processCompanyLogo = async (params: any) => {
       ...params.data,
       logo,
     },
+  };
+};
+
+const flattenCompanyCreatePayload = (data: Record<string, any>) => {
+  const logo = data.logo;
+
+  if (typeof logo !== "object" || logo === null) {
+    return data;
+  }
+
+  return {
+    ...data,
+    logo_src: logo.src ?? undefined,
+    logo_title: logo.title ?? undefined,
+    logo_path: logo.path ?? undefined,
+    logo_type: logo.type ?? undefined,
+    logo: undefined,
   };
 };
 
@@ -171,6 +188,40 @@ const normalizeAttachment = (attachment: RAFile): RAFile => ({
     }) ?? attachment.src,
 });
 
+const normalizeCompanyRecord = <
+  T extends {
+    logo?: RAFile | null;
+    logo_src?: string | null;
+    logo_title?: string | null;
+    logo_path?: string | null;
+    logo_type?: string | null;
+  },
+>(
+  record: T,
+): T => {
+  if (record.logo?.src) {
+    return record;
+  }
+
+  if (!record.logo_src) {
+    return record;
+  }
+
+  return {
+    ...record,
+    logo: {
+      src:
+        resolveSqlWebApiAttachmentUrl({
+          src: record.logo_src,
+          path: record.logo_path ?? undefined,
+        }) ?? record.logo_src,
+      title: record.logo_title ?? "Company logo",
+      path: record.logo_path ?? undefined,
+      type: record.logo_type ?? undefined,
+    },
+  };
+};
+
 const normalizeNoteRecord = <T extends { attachments?: RAFile[] | null }>(
   record: T,
 ): T => {
@@ -188,7 +239,11 @@ const dataProviderWithCustomMethods = {
   ...baseDataProvider,
   async getList(resource: string, params: GetListParams) {
     if (resource === "companies") {
-      return baseDataProvider.getList("companies_summary", params);
+      const response = await baseDataProvider.getList("companies_summary", params);
+      return {
+        ...response,
+        data: response.data.map(normalizeCompanyRecord),
+      };
     }
     if (resource === "contacts") {
       return baseDataProvider.getList("contacts_summary", params);
@@ -207,7 +262,11 @@ const dataProviderWithCustomMethods = {
   },
   async getOne(resource: string, params: any) {
     if (resource === "companies") {
-      return baseDataProvider.getOne("companies_summary", params);
+      const response = await baseDataProvider.getOne("companies_summary", params);
+      return {
+        ...response,
+        data: normalizeCompanyRecord(response.data),
+      };
     }
     if (resource === "contacts") {
       return baseDataProvider.getOne("contacts_summary", params);
@@ -227,6 +286,13 @@ const dataProviderWithCustomMethods = {
   async create(resource: string, params: any) {
     const response = await baseDataProvider.create(resource, params);
 
+    if (resource === "companies") {
+      return {
+        ...response,
+        data: normalizeCompanyRecord(response.data),
+      };
+    }
+
     if (!noteResources.has(resource)) {
       return response;
     }
@@ -238,6 +304,13 @@ const dataProviderWithCustomMethods = {
   },
   async update(resource: string, params: any) {
     const response = await baseDataProvider.update(resource, params);
+
+    if (resource === "companies") {
+      return {
+        ...response,
+        data: normalizeCompanyRecord(response.data),
+      };
+    }
 
     if (!noteResources.has(resource)) {
       return response;
@@ -465,7 +538,7 @@ export const dataProvider = withLifecycleCallbacks(
         return {
           ...createParams,
           data: {
-            ...createParams.data,
+            ...flattenCompanyCreatePayload(createParams.data),
             created_at: new Date().toISOString(),
           },
         };
@@ -542,23 +615,168 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return btoa(binary);
 }
 
+const buildUploadFilename = (fi: RAFile, contentType: string) => {
+  const fallbackBaseName = "upload";
+  const normalizedTitle = (fi.path || fi.title || fallbackBaseName)
+    .replace(/[^\w.-]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  const currentName = normalizedTitle || fallbackBaseName;
+  if (currentName.includes(".")) {
+    return currentName;
+  }
+
+  const subtype = contentType.split("/")[1]?.split("+")[0];
+  const extension = subtype || "bin";
+  return `${currentName}.${extension}`;
+};
+
+const getUploadFile = async (fi: RAFile): Promise<File | null> => {
+  if (fi.rawFile instanceof File) {
+    return fi.rawFile;
+  }
+
+  if (!fi.src?.startsWith("data:")) {
+    return null;
+  }
+
+  const response = await fetch(fi.src);
+  const blob = await response.blob();
+  const contentType = blob.type || fi.type || "application/octet-stream";
+  const filename = buildUploadFilename(fi, contentType);
+
+  return new File([blob], filename, { type: contentType });
+};
+
+const trimTransparentImageWhitespace = async (file: File): Promise<File> => {
+  if (
+    typeof window === "undefined" ||
+    typeof document === "undefined" ||
+    !file.type.startsWith("image/")
+  ) {
+    return file;
+  }
+
+  const imageUrl = URL.createObjectURL(file);
+
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("Failed to load image for trimming"));
+      img.src = imageUrl;
+    });
+
+    const canvas = document.createElement("canvas");
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+
+    const context = canvas.getContext("2d");
+    if (!context) {
+      return file;
+    }
+
+    context.drawImage(image, 0, 0);
+
+    const { data, width, height } = context.getImageData(
+      0,
+      0,
+      canvas.width,
+      canvas.height,
+    );
+
+    let minX = width;
+    let minY = height;
+    let maxX = -1;
+    let maxY = -1;
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const alpha = data[(y * width + x) * 4 + 3];
+        if (alpha === 0) {
+          continue;
+        }
+
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+      }
+    }
+
+    if (maxX < minX || maxY < minY) {
+      return file;
+    }
+
+    const trimmedWidth = maxX - minX + 1;
+    const trimmedHeight = maxY - minY + 1;
+
+    if (trimmedWidth === width && trimmedHeight === height) {
+      return file;
+    }
+
+    const trimmedCanvas = document.createElement("canvas");
+    trimmedCanvas.width = trimmedWidth;
+    trimmedCanvas.height = trimmedHeight;
+
+    const trimmedContext = trimmedCanvas.getContext("2d");
+    if (!trimmedContext) {
+      return file;
+    }
+
+    trimmedContext.drawImage(
+      canvas,
+      minX,
+      minY,
+      trimmedWidth,
+      trimmedHeight,
+      0,
+      0,
+      trimmedWidth,
+      trimmedHeight,
+    );
+
+    const trimmedBlob = await new Promise<Blob | null>((resolve) => {
+      trimmedCanvas.toBlob(resolve, file.type || "image/png");
+    });
+
+    if (!trimmedBlob) {
+      return file;
+    }
+
+    return new File([trimmedBlob], file.name, {
+      type: trimmedBlob.type || file.type,
+      lastModified: file.lastModified,
+    });
+  } catch {
+    return file;
+  } finally {
+    URL.revokeObjectURL(imageUrl);
+  }
+};
+
 // @bucket_id='test',@object_path='testpatj',@content_type='bin',@data='123',@upsert='1'
-const uploadToBucket = async (fi: RAFile) => {
-
-  const base64 = fi.rawFile
-  ? arrayBufferToBase64(await fi.rawFile.arrayBuffer())
-  : null;
-
-  if (!base64) {
+const uploadToBucket = async (
+  fi: RAFile,
+  options?: { trimImageWhitespace?: boolean },
+) => {
+  const sourceFile = await getUploadFile(fi);
+  const uploadFile =
+    sourceFile && options?.trimImageWhitespace
+      ? await trimTransparentImageWhitespace(sourceFile)
+      : sourceFile;
+  if (!uploadFile) {
     return fi;
   }
+
+  const base64 = arrayBufferToBase64(await uploadFile.arrayBuffer());
 
   const res = await baseDataProvider.create("objects", 
     { 
       data: {
         bucket_id: "attachments",
-        object_path: fi.rawFile.name,
-        content_type: fi.rawFile.type,
+        object_path: uploadFile.name,
+        content_type: uploadFile.type || fi.type || "application/octet-stream",
         data: base64 
       }
     }
@@ -592,7 +810,7 @@ const uploadToBucket = async (fi: RAFile) => {
     object_path: objectPath,
   });
   fi.src = publicUrl ?? fi.src;
-  fi.type = fi.rawFile.type;
+  fi.type = uploadFile.type || fi.type;
   // // save MIME type
   // const mimeType = file.type;
   // fi.type = mimeType;

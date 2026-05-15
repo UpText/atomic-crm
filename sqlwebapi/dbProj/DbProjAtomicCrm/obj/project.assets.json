@@ -27,7 +27,6 @@
         "netstandard2.1"
       ],
       "sources": {
-        "/opt/homebrew/Cellar/dotnet/10.0.107/libexec/library-packs": {},
         "https://api.nuget.org/v3/index.json": {},
         "https://www.myget.org/F/blazorise/api/v3/index.json": {}
       },
@@ -41,13 +40,7 @@
         "noWarn": [
           "NU5128"
         ]
-      },
-      "restoreAuditProperties": {
-        "enableAudit": "true",
-        "auditLevel": "low",
-        "auditMode": "direct"
-      },
-      "SdkAnalysisLevel": "10.0.100"
+      }
     },
     "frameworks": {
       "netstandard2.1": {
@@ -63,7 +56,7 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "runtimeIdentifierGraphPath": "/opt/homebrew/Cellar/dotnet/10.0.107/libexec/sdk/10.0.107/RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/opt/homebrew/Cellar/dotnet@8/8.0.124/libexec/sdk/8.0.124/RuntimeIdentifierGraph.json"
       }
     }
   }

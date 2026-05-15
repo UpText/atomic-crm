@@ -56,7 +56,7 @@ CREATE TABLE crm.company (
     sales_id          INT NOT NULL,
 
     -- logo fields (RAFile)
-    logo_src          NVARCHAR(2048) NOT NULL,
+    logo_src          NVARCHAR(MAX) NOT NULL,
     logo_title        NVARCHAR(255) NOT NULL,
     logo_path         NVARCHAR(1024) NULL,
     logo_type         NVARCHAR(128) NULL,

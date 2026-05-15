@@ -85,6 +85,19 @@ const defaultStats = {
   tasks: 0,
 };
 
+const createImportedCompanyLogo = (dataToImport: CompanyImport): RAFile | undefined => {
+  if (!dataToImport.logo_src) {
+    return undefined;
+  }
+
+  return {
+    src: dataToImport.logo_src,
+    title: dataToImport.logo_title || "Company logo",
+    path: dataToImport.logo_path,
+    type: dataToImport.logo_type,
+  } as RAFile;
+};
+
 /**
  * A hook that returns a function to import data from a JSON file.
  * We do the import on the client because edge functions are limited in both execution time and memory.
@@ -249,12 +262,7 @@ export const useImportFromJson = (): [
         const { data } = await dataProvider.create("companies", {
           data: {
             name: dataToImport.name.trim(),
-            logo: dataToImport.logo_src
-              ? {
-                  src: dataToImport.logo_src,
-                  title: "Company logo",
-                }
-              : undefined,
+            logo: createImportedCompanyLogo(dataToImport),
             description: dataToImport.description?.trim(),
             city: dataToImport.city?.trim(),
             country: dataToImport.country?.trim(),
@@ -725,6 +733,9 @@ type CompanyImport = {
   id: number;
   name: string;
   logo_src?: string;
+  logo_title?: string;
+  logo_path?: string;
+  logo_type?: string;
   sales_id?: number;
   description?: string;
   city?: string;

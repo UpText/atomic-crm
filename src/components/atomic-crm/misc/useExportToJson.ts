@@ -49,6 +49,9 @@ type ExportSchema = {
     name: string;
     sales_id?: number;
     logo_src?: string;
+    logo_title?: string;
+    logo_path?: string;
+    logo_type?: string;
     description?: string;
     city?: string;
     country?: string;
@@ -103,6 +106,38 @@ type ExportSchema = {
 
 const PAGE_SIZE = 1000;
 
+const isDataUrl = (value: string) => value.startsWith("data:");
+
+const readBlobAsDataUrl = (blob: Blob) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error ?? new Error("Failed to read blob"));
+    reader.readAsDataURL(blob);
+  });
+
+export const embedFileSrcForExport = async (src?: string): Promise<string | undefined> => {
+  if (!src) {
+    return undefined;
+  }
+
+  if (isDataUrl(src)) {
+    return src;
+  }
+
+  try {
+    const response = await fetch(src);
+    if (!response.ok) {
+      return src;
+    }
+
+    const blob = await response.blob();
+    return await readBlobAsDataUrl(blob);
+  } catch {
+    return src;
+  }
+};
+
 export const useExportToJson = (): [ExportFromJsonState, ExportFromJsonFunction] => {
   const { identity } = useGetIdentity();
   const dataProvider = useDataProvider<CrmDataProvider>();
@@ -144,6 +179,10 @@ export const useExportToJson = (): [ExportFromJsonState, ExportFromJsonFunction]
         ]),
       );
 
+      const exportedCompanyLogos = await Promise.all(
+        companies.map((company) => embedFileSrcForExport(company.logo?.src)),
+      );
+
       const payload: ExportSchema = {
         sales: sales.map((sale) => ({
           id: salesIdMap.get(sale.id)!,
@@ -151,12 +190,15 @@ export const useExportToJson = (): [ExportFromJsonState, ExportFromJsonFunction]
           first_name: sale.first_name,
           last_name: sale.last_name,
         })),
-        companies: companies.map((company) => ({
+        companies: companies.map((company, index) => ({
           id: companyIdMap.get(company.id)!,
           name: company.name,
           sales_id:
             company.sales_id != null ? salesIdMap.get(company.sales_id) : undefined,
-          logo_src: company.logo?.src || undefined,
+          logo_src: exportedCompanyLogos[index],
+          logo_title: company.logo?.title || undefined,
+          logo_path: company.logo?.path || undefined,
+          logo_type: company.logo?.type || undefined,
           description: company.description || undefined,
           city: company.city || undefined,
           country: company.country || undefined,
