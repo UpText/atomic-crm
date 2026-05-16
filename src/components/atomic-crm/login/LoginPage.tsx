@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Form, required, useLogin, useNotify, useTranslate } from "ra-core";
 import type { ReactNode } from "react";
 import type { SubmitHandler, FieldValues } from "react-hook-form";
+import type { KeyboardEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { TextInput } from "@/components/admin/text-input";
@@ -77,6 +78,17 @@ export const LoginPage = (props: LoginPageProps) => {
     );
   }, [location.pathname, location.search, navigate, notify]);
 
+  const handleEnterSubmit = (
+    event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    if (event.key !== "Enter" || event.nativeEvent.isComposing) {
+      return;
+    }
+
+    event.preventDefault();
+    event.currentTarget.form?.requestSubmit();
+  };
+
   const handleSubmit: SubmitHandler<FieldValues> = (values) => {
     const submitValues = transformSubmitValues
       ? transformSubmitValues(values)
@@ -138,6 +150,7 @@ export const LoginPage = (props: LoginPageProps) => {
                     label="Tenant"
                     source="tenant"
                     validate={required()}
+                    onKeyDown={handleEnterSubmit}
                   />
                 ) : null}
                 <TextInput
@@ -145,12 +158,14 @@ export const LoginPage = (props: LoginPageProps) => {
                   source="email"
                   type="email"
                   validate={required()}
+                  onKeyDown={handleEnterSubmit}
                 />
                 <TextInput
                   label="ra.auth.password"
                   source="password"
                   type="password"
                   validate={required()}
+                  onKeyDown={handleEnterSubmit}
                 />
                 {additionalFields}
                 <div className="flex flex-col gap-4">

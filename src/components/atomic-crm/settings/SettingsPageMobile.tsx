@@ -45,6 +45,7 @@ import { MobileContent } from "../layout/MobileContent";
 import MobileHeader from "../layout/MobileHeader";
 import { ChangelogPage } from "../misc/ChangelogPage";
 import ImageEditorField from "../misc/ImageEditorField";
+import { hasSqlWebApiUrl } from "../providers/sqlwebapi/runtimeConfig";
 import type { CrmDataProvider } from "../providers/types";
 import type { SalesFormData } from "../types";
 
@@ -94,6 +95,7 @@ export const SettingsPageMobile = () => {
   const translate = useTranslate();
   const authProvider = useAuthProvider();
   const logout = useLogout();
+  const isSqlWebApi = hasSqlWebApiUrl();
 
   if (!authProvider) return null;
 
@@ -110,7 +112,7 @@ export const SettingsPageMobile = () => {
             <ProfileSection />
             <PreferencesSection />
             <InboundEmailSection />
-            <McpServerSection />
+            {!isSqlWebApi && <McpServerSection />}
             <AboutSection />
           </div>
 

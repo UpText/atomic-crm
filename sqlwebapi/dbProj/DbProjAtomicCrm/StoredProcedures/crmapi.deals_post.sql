@@ -40,7 +40,7 @@ BEGIN
         @company_id,
         @category,
         @stage,
-        @description,
+        COALESCE(@description, N''),
         @amount,
         GETDATE(),
         GETDATE(),

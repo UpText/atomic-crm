@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Form, required, useLogin, useNotify } from "ra-core";
 import type { SubmitHandler, FieldValues } from "react-hook-form";
+import type { KeyboardEvent } from "react";
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import { TextInput } from "@/components/admin/text-input";
@@ -22,6 +23,17 @@ export const LoginPage = (props: { redirectTo?: string }) => {
   const [loading, setLoading] = useState(false);
   const login = useLogin();
   const notify = useNotify();
+
+  const handleEnterSubmit = (
+    event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    if (event.key !== "Enter" || event.nativeEvent.isComposing) {
+      return;
+    }
+
+    event.preventDefault();
+    event.currentTarget.form?.requestSubmit();
+  };
 
   const handleSubmit: SubmitHandler<FieldValues> = (values) => {
     setLoading(true);
@@ -73,12 +85,14 @@ export const LoginPage = (props: { redirectTo?: string }) => {
                 source="email"
                 type="email"
                 validate={required()}
+                onKeyDown={handleEnterSubmit}
               />
               <TextInput
                 label="Password"
                 source="password"
                 type="password"
                 validate={required()}
+                onKeyDown={handleEnterSubmit}
               />
               <Button
                 type="submit"

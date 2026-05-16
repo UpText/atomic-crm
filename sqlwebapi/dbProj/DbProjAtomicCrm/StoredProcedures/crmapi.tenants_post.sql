@@ -10,6 +10,7 @@ BEGIN
 
     DECLARE @normalized_tenant NVARCHAR(255) = LTRIM(RTRIM(@tenant));
     DECLARE @normalized_admin_email NVARCHAR(255) = LOWER(LTRIM(RTRIM(@admin_email)));
+    DECLARE @password_hash NVARCHAR(64);
 
     IF @normalized_tenant IS NULL OR @normalized_tenant = N''
     BEGIN
@@ -46,6 +47,8 @@ BEGIN
         RAISERROR('password is required.', 16, 1);
         RETURN 400;
     END
+
+    SET @password_hash = CONVERT(NVARCHAR(64), HASHBYTES('SHA2_256', CONVERT(VARBINARY(MAX), @password)), 2);
 
     IF EXISTS (SELECT 1 FROM crm.tenants WHERE name = @normalized_tenant)
     BEGIN
@@ -98,7 +101,7 @@ BEGIN
         N'User',
         1,
         0,
-        @password
+        @password_hash
     );
 
     COMMIT TRANSACTION;
