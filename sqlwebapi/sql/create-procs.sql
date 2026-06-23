@@ -809,10 +809,30 @@ GO
          , @first_row INT = 0, @last_row INT = 1000 
          , @sort_field NVARCHAR(100) = NULL, @sort_order NVARCHAR(4) = NULL 
      ) AS 
+     DECLARE @search NVARCHAR(200) = (SELECT TOP 1 '%' + value + '%' FROM OPENJSON(@filter, '$."@or"'));
+     DECLARE @archived_at_is_null bit = 0
+     DECLARE @archived_at_not_null bit = 0
+     DECLARE @filter_company_id int = JSON_VALUE(@filter, '$."company_id"')
+     DECLARE @filter_category varchar(255) = JSON_VALUE(@filter, '$."category"')
+
+     IF JSON_VALUE(@filter, '$."archived_at@is"') = 'null'
+         SET @archived_at_is_null = 1
+
+     IF JSON_VALUE(@filter, '$."archived_at@not.is"') = 'null'
+         SET @archived_at_not_null = 1
+
       SELECT  id AS id, name, company_id, category, stage, description, amount, created_at, updated_at, archived_at, expected_closing_date, sales_id, [index], COUNT(*) OVER() AS total_rows 
            FROM crm.deals  
            WHERE (@ID IS NULL OR @ID = id) 
-           AND (@filter IS NULL OR @filter = id OR CHARINDEX(@filter,CAST(name AS varchar)) > 0)
+           AND (@archived_at_is_null = 0 OR archived_at IS NULL)
+           AND (@archived_at_not_null = 0 OR archived_at IS NOT NULL)
+           AND (@filter_company_id IS NULL OR @filter_company_id = company_id)
+           AND (@filter_category IS NULL OR @filter_category = category)
+           AND (
+                @search IS NULL
+                OR name LIKE @search
+                OR description LIKE @search
+           )
             ORDER BY
            CASE WHEN @sort_field = 'id' AND @sort_order = 'ASC' THEN id END ASC, 
             CASE WHEN @sort_field = 'id' AND @sort_order = 'DESC' THEN id END DESC, 

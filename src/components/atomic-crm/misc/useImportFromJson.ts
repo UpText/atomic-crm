@@ -18,6 +18,7 @@ export type ImportFromJsonStats = {
   sales: number;
   companies: number;
   contacts: number;
+  deals: number;
   notes: number;
   tasks: number;
 };
@@ -26,6 +27,7 @@ export type ImportFromJsonFailures = {
   sales: Array<JsonTypes.JsonPrimitive | JsonTypes.JsonStruct | undefined>;
   companies: Array<JsonTypes.JsonPrimitive | JsonTypes.JsonStruct | undefined>;
   contacts: Array<JsonTypes.JsonPrimitive | JsonTypes.JsonStruct | undefined>;
+  deals: Array<JsonTypes.JsonPrimitive | JsonTypes.JsonStruct | undefined>;
   notes: Array<JsonTypes.JsonPrimitive | JsonTypes.JsonStruct | undefined>;
   tasks: Array<JsonTypes.JsonPrimitive | JsonTypes.JsonStruct | undefined>;
 };
@@ -73,6 +75,7 @@ const defaultFailedImports = {
   sales: [],
   companies: [],
   contacts: [],
+  deals: [],
   notes: [],
   tasks: [],
 };
@@ -81,6 +84,7 @@ const defaultStats = {
   sales: 0,
   companies: 0,
   contacts: 0,
+  deals: 0,
   notes: 0,
   tasks: 0,
 };
@@ -527,6 +531,110 @@ export const useImportFromJson = (): [
       }
     };
 
+    const importDeal = async (
+      dataToImport: JsonTypes.JsonPrimitive | JsonTypes.JsonStruct | undefined,
+    ) => {
+      if (!isDeal(dataToImport)) {
+        setState((old) => ({
+          ...old,
+          status: "importing",
+          failedImports: {
+            ...old.failedImports,
+            deals: [
+              ...old.failedImports.deals,
+              { ...(dataToImport as any), error: "Invalid format" },
+            ],
+          },
+          error: null,
+        }));
+        return;
+      }
+      try {
+        if (idsMaps.companies[dataToImport.company_id] == null) {
+          setState((old) => ({
+            ...old,
+            status: "importing",
+            failedImports: {
+              ...old.failedImports,
+              deals: [
+                ...old.failedImports.deals,
+                {
+                  ...(dataToImport as any),
+                  error: `Invalid company_id ${dataToImport.company_id}`,
+                },
+              ],
+            },
+            error: null,
+          }));
+          return;
+        }
+
+        const contactIds = dataToImport.contact_ids
+          .map((contactId) => idsMaps.contacts[contactId])
+          .filter((contactId): contactId is Identifier => contactId != null);
+
+        if (contactIds.length !== dataToImport.contact_ids.length) {
+          setState((old) => ({
+            ...old,
+            status: "importing",
+            failedImports: {
+              ...old.failedImports,
+              deals: [
+                ...old.failedImports.deals,
+                {
+                  ...(dataToImport as any),
+                  error: "One or more contact_ids are invalid",
+                },
+              ],
+            },
+            error: null,
+          }));
+          return;
+        }
+
+        await dataProvider.create("deals", {
+          data: {
+            name: dataToImport.name.trim(),
+            sales_id: idsMaps.sales[dataToImport.sales_id] ?? currentSale.id,
+            company_id: idsMaps.companies[dataToImport.company_id],
+            contact_ids: contactIds,
+            category: dataToImport.category || undefined,
+            stage: dataToImport.stage,
+            description: dataToImport.description?.trim(),
+            amount: dataToImport.amount,
+            created_at: dataToImport.created_at,
+            updated_at: dataToImport.updated_at,
+            archived_at: dataToImport.archived_at,
+            expected_closing_date: dataToImport.expected_closing_date,
+            index: dataToImport.index ?? 0,
+          },
+        });
+        setState((old) => ({
+          ...old,
+          status: "importing",
+          stats: {
+            ...old.stats,
+            deals: old.stats.deals + 1,
+          },
+          error: null,
+        }));
+      } catch (err) {
+        console.error(err);
+        setState((old) => ({
+          ...old,
+          status: "importing",
+          failedImports: {
+            ...old.failedImports,
+            deals: [
+              ...old.failedImports.deals,
+              { ...(dataToImport as any), error: (err as Error).message },
+            ],
+          },
+          error: null,
+        }));
+      }
+    };
+
     const importTask = async (
       dataToImport: JsonTypes.JsonPrimitive | JsonTypes.JsonStruct | undefined,
     ) => {
@@ -617,6 +725,7 @@ export const useImportFromJson = (): [
         "$.sales.*",
         "$.companies.*",
         "$.contacts.*",
+        "$.deals.*",
         "$.notes.*",
         "$.tasks.*",
       ],
@@ -669,6 +778,10 @@ export const useImportFromJson = (): [
           currentBatch.push(importContact(value));
           break;
         }
+        case "deals": {
+          currentBatch.push(importDeal(value));
+          break;
+        }
         case "notes": {
           currentBatch.push(importNote(value));
           break;
@@ -704,7 +817,7 @@ export const useImportFromJson = (): [
   return [state, importFile, reset];
 };
 
-const TYPES = ["sales", "companies", "contacts", "notes", "tasks"] as const;
+const TYPES = ["sales", "companies", "contacts", "deals", "notes", "tasks"] as const;
 type Types = (typeof TYPES)[number];
 
 const getType = (value: string | undefined): Types | undefined => {
@@ -787,6 +900,35 @@ const isContact = (data: any): data is ContactImport =>
   typeof data === "object" &&
   !Array.isArray(data) &&
   data.id != null;
+
+type DealImport = {
+  id: number;
+  sales_id: number;
+  company_id: number;
+  contact_ids: number[];
+  name: string;
+  category?: string;
+  stage: string;
+  description?: string;
+  amount: number;
+  created_at?: string;
+  updated_at?: string;
+  archived_at?: string;
+  expected_closing_date?: string;
+  index?: number;
+};
+
+const isDeal = (data: any): data is DealImport =>
+  data != null &&
+  typeof data === "object" &&
+  !Array.isArray(data) &&
+  data.id != null &&
+  data.sales_id != null &&
+  data.company_id != null &&
+  Array.isArray(data.contact_ids) &&
+  data.name != null &&
+  data.stage != null &&
+  data.amount != null;
 
 type NoteImport = {
   contact_id: number;

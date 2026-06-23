@@ -119,8 +119,8 @@ const Header = () => {
                     <SettingsMenu />
                   </CanAccess>
                   {permissions === "admin" ? <ExportDataMenuItem /> : null}
-                  <ImportFromJsonMenuItem />
-                  <ChangelogMenuItem />
+                  {permissions === "admin" ? <ImportFromJsonMenuItem /> : null}
+                  {permissions === "admin" ? <ChangelogMenuItem /> : null}
                 </UserMenu>
               </div>
             </div>

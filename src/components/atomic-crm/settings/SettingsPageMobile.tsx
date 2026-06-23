@@ -457,8 +457,9 @@ const ThemeRow = () => {
 
 const InboundEmailSection = () => {
   const translate = useTranslate();
+  const isSqlWebApi = hasSqlWebApiUrl();
 
-  if (!import.meta.env.VITE_INBOUND_EMAIL) return null;
+  if (!import.meta.env.VITE_INBOUND_EMAIL || isSqlWebApi) return null;
 
   return (
     <div>

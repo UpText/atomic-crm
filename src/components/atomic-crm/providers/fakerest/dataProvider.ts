@@ -537,7 +537,8 @@ export const createDataProvider = ({
             ...createParams,
             data: {
               ...createParams.data,
-              created_at: new Date().toISOString(),
+              created_at:
+                createParams.data.created_at ?? new Date().toISOString(),
             },
           };
         },
@@ -568,8 +569,8 @@ export const createDataProvider = ({
             ...params,
             data: {
               ...params.data,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
+              created_at: params.data.created_at ?? new Date().toISOString(),
+              updated_at: params.data.updated_at ?? new Date().toISOString(),
             },
           };
         },

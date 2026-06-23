@@ -5,15 +5,20 @@ import type { Company } from "../types";
 
 export const CompanyAvatar = (props: {
   record?: Company;
-  width?: 20 | 40;
-  height?: 20 | 40;
+  width?: 20 | 32 | 40;
+  height?: 20 | 32 | 40;
 }) => {
   const { width = 40, height = width } = props;
   const record = useRecordContext<Company>(props);
   if (!record) return null;
 
-  const isSmall = width !== 40 || height !== 40;
-  const sizeClass = isSmall ? "w-[20px] h-[20px]" : "w-24 h-12";
+  const isDefaultSize = width === 40 && height === 40;
+  const isCompact = width === 20 || height === 20;
+  const sizeClass = isDefaultSize
+    ? "w-24 h-12"
+    : width === 32 || height === 32
+      ? "w-8 h-8"
+      : "w-[20px] h-[20px]";
   const [imageFailed, setImageFailed] = useState(false);
   const hasLogo = !!record.logo?.src && !imageFailed;
 
@@ -31,10 +36,10 @@ export const CompanyAvatar = (props: {
       ) : (
         <div
           className={`flex h-full w-full items-center justify-center rounded-md bg-muted ${
-            isSmall ? "text-xs" : "text-sm"
+            isCompact ? "text-xs" : "text-sm"
           }`}
         >
-        {record.name.charAt(0)}
+          {record.name.charAt(0)}
         </div>
       )}
     </div>

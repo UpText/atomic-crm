@@ -12,6 +12,7 @@ import type {
   Company,
   Contact,
   ContactNote,
+  Deal,
   Sale,
   Tag,
   Task,
@@ -86,6 +87,22 @@ type ExportSchema = {
     created_at?: string;
     updated_at?: string;
   }>;
+  deals: Array<{
+    id: number;
+    sales_id?: number;
+    company_id: number;
+    contact_ids: number[];
+    name: string;
+    category?: string;
+    stage: string;
+    description?: string;
+    amount: number;
+    created_at?: string;
+    updated_at?: string;
+    archived_at?: string;
+    expected_closing_date?: string;
+    index?: number;
+  }>;
   notes: Array<{
     contact_id: number;
     sales_id: number;
@@ -157,11 +174,12 @@ export const useExportToJson = (): [ExportFromJsonState, ExportFromJsonFunction]
     });
 
     try {
-      const [sales, companies, contacts, notes, tasks, tags, configuration] =
+      const [sales, companies, contacts, deals, notes, tasks, tags, configuration] =
         await Promise.all([
           getAllRecords<Sale>(dataProvider, "sales"),
           getAllRecords<Company>(dataProvider, "companies"),
           getAllRecords<Contact>(dataProvider, "contacts"),
+          getAllRecords<Deal>(dataProvider, "deals"),
           getAllRecords<ContactNote>(dataProvider, "contact_notes"),
           getAllRecords<Task>(dataProvider, "tasks"),
           getAllRecords<Tag>(dataProvider, "tags"),
@@ -171,6 +189,7 @@ export const useExportToJson = (): [ExportFromJsonState, ExportFromJsonFunction]
       const salesIdMap = createIdMap(sales);
       const companyIdMap = createIdMap(companies);
       const contactIdMap = createIdMap(contacts);
+      const dealIdMap = createIdMap(deals);
       const tagNameMap = new Map(tags.map((tag) => [tag.id, tag.name]));
       const sectorValueByLabel = new Map(
         (configuration?.companySectors ?? defaultCompanySectors).map((sector) => [
@@ -241,6 +260,32 @@ export const useExportToJson = (): [ExportFromJsonState, ExportFromJsonFunction]
           created_at: contact.first_seen || undefined,
           updated_at: contact.last_seen || undefined,
         })),
+        deals: deals
+          .filter(
+            (deal) =>
+              salesIdMap.has(deal.sales_id) &&
+              companyIdMap.has(deal.company_id) &&
+              deal.contact_ids.every((contactId) => contactIdMap.has(contactId)),
+          )
+          .map((deal) => ({
+            id: dealIdMap.get(deal.id)!,
+            sales_id:
+              deal.sales_id != null ? salesIdMap.get(deal.sales_id) : undefined,
+            company_id: companyIdMap.get(deal.company_id)!,
+            contact_ids: deal.contact_ids.map(
+              (contactId) => contactIdMap.get(contactId)!,
+            ),
+            name: deal.name,
+            category: deal.category || undefined,
+            stage: deal.stage,
+            description: deal.description || undefined,
+            amount: deal.amount,
+            created_at: deal.created_at || undefined,
+            updated_at: deal.updated_at || undefined,
+            archived_at: deal.archived_at || undefined,
+            expected_closing_date: deal.expected_closing_date || undefined,
+            index: deal.index,
+          })),
         notes: notes
           .filter(
             (note) =>

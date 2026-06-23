@@ -245,7 +245,7 @@ const ProfileForm = ({
           </div>
         </CardContent>
       </Card>
-      {import.meta.env.VITE_INBOUND_EMAIL && (
+      {import.meta.env.VITE_INBOUND_EMAIL && !isSqlWebApi && (
         <Card>
           <CardContent>
             <div className="space-y-4 justify-between">

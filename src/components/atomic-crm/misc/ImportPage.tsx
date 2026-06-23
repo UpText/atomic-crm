@@ -74,7 +74,7 @@ const ImportFromJsonIdle = ({
     <div className="mb-4">
       <p className="text-sm">
         {translate("crm.import.idle.description_1", {
-          _: "You can import sales, companies, contacts, companies, notes, and tasks.",
+          _: "You can import sales, companies, contacts, deals, notes, and tasks.",
         })}
       </p>
       <p className="text-sm">
@@ -206,6 +206,7 @@ const hasFailedImports = (failedImports: ImportFromJsonFailures) => {
     failedImports.sales.length > 0 ||
     failedImports.companies.length > 0 ||
     failedImports.contacts.length > 0 ||
+    failedImports.deals.length > 0 ||
     failedImports.notes.length > 0 ||
     failedImports.tasks.length > 0
   );
@@ -258,6 +259,11 @@ const ImportStats = ({
       entity: "contacts",
       imported: stats.contacts,
       failed: failedImports.contacts.length,
+    },
+    {
+      entity: "deals",
+      imported: stats.deals,
+      failed: failedImports.deals.length,
     },
     {
       entity: "notes",

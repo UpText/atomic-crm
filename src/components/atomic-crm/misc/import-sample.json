@@ -76,6 +76,20 @@
       "tags": ["VIP", "Science"]
     }
   ],
+  "deals": [
+    {
+      "id": 678,
+      "sales_id": 123,
+      "company_id": 345,
+      "contact_ids": [567],
+      "name": "Portal Device Rollout",
+      "category": "partnership",
+      "stage": "opportunity",
+      "description": "Pilot deployment for inter-office portal testing.",
+      "amount": 250000,
+      "expected_closing_date": "2025-06-30"
+    }
+  ],
   "notes": [
     {
       "contact_id": 456,

@@ -539,7 +539,8 @@ export const dataProvider = withLifecycleCallbacks(
           ...createParams,
           data: {
             ...flattenCompanyCreatePayload(createParams.data),
-            created_at: new Date().toISOString(),
+            created_at:
+              createParams.data.created_at ?? new Date().toISOString(),
           },
         };
       },
