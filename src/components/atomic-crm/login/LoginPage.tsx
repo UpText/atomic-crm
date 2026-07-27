@@ -9,6 +9,10 @@ import { TextInput } from "@/components/admin/text-input";
 import { Notification } from "@/components/admin/notification";
 import { useConfigurationContext } from "@/components/atomic-crm/root/ConfigurationContext.tsx";
 import { SSOAuthButton } from "./SSOAuthButton";
+import {
+  disableEmailPasswordAuthentication,
+  googleWorkplaceDomain,
+} from "./authConfig";
 
 /**
  * Login page displayed when authentication is enabled and the user is not authenticated.
@@ -29,12 +33,7 @@ type LoginPageProps = {
 };
 
 export const LoginPage = (props: LoginPageProps) => {
-  const {
-    darkModeLogo,
-    title,
-    googleWorkplaceDomain,
-    disableEmailPasswordAuthentication,
-  } = useConfigurationContext();
+  const { darkModeLogo, title } = useConfigurationContext();
   const {
     redirectTo,
     showTenantField = false,
