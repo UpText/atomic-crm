@@ -1612,10 +1612,20 @@ GO
      DECLARE @filter_company_id int = JSON_VALUE(@filter, '$."company_id"')
      DECLARE @filter_category varchar(255) = JSON_VALUE(@filter, '$."category"')
 
-     IF JSON_VALUE(@filter, '$."archived_at@is"') = 'null'
+     IF EXISTS (
+         SELECT 1
+         FROM OPENJSON(@filter)
+         WHERE [key] = 'archived_at@is'
+           AND [type] = 0
+     )
          SET @archived_at_is_null = 1
 
-     IF JSON_VALUE(@filter, '$."archived_at@not.is"') = 'null'
+     IF EXISTS (
+         SELECT 1
+         FROM OPENJSON(@filter)
+         WHERE [key] = 'archived_at@not.is'
+           AND [type] = 0
+     )
          SET @archived_at_not_null = 1
 
       SELECT  id AS id, name, company_id, category, stage, description, amount, created_at, updated_at, archived_at, expected_closing_date, sales_id, [index], COUNT(*) OVER() AS total_rows 
@@ -1628,6 +1638,7 @@ GO
            AND (
                 @search IS NULL
                 OR name LIKE @search
+                OR category LIKE @search
                 OR description LIKE @search
            )
             ORDER BY

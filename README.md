@@ -59,6 +59,35 @@ If you need debug the backend, you can access the following services:
 - Attachments storage: [http://localhost:54323/project/default/storage/buckets/attachments](http://localhost:54323/project/default/storage/buckets/attachments)
 - Inbucket email testing service: [http://localhost:54324/](http://localhost:54324/)
 
+## SQLWebAPI Mode
+
+Atomic CRM can also run against the SQL Server-backed SQLWebAPI provider instead of Supabase.
+
+Start the SQLWebAPI frontend with:
+
+```sh
+npm run dev:sqlwebapi
+```
+
+By default, this uses:
+
+- Frontend: [http://localhost:5173/](http://localhost:5173/)
+- API base: [http://localhost:8081/crmapi](http://localhost:8081/crmapi)
+
+You can override the API endpoint with environment variables:
+
+```sh
+VITE_SQLWEBAPI_URL=http://localhost:8081 VITE_SQLWEBAPI_SERVICE=crmapi npm run dev:sqlwebapi
+```
+
+For production builds, use:
+
+```sh
+npm run build:sqlwebapi
+```
+
+The SQLWebAPI React entry point is `sqlwebapi/main.tsx`, which renders `sqlwebapi/App.tsx` with the SQLWebAPI data provider, auth provider, and login page. SQL Server schema and stored procedure files live under `sqlwebapi/dbProj/DbProjAtomicCrm/`.
+
 ## Documentation
 
 The user and developer documentation for this project is available [in the `doc/` directory](./doc/). You can also read it online at [https://marmelab.com/atomic-crm/doc/](https://marmelab.com/atomic-crm/doc/).

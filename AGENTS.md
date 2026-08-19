@@ -12,6 +12,7 @@ make install          # Install dependencies (frontend, backend, local Supabase)
 make start            # Start full stack with real API (Supabase + Vite dev server)
 make stop             # Stop the stack
 make start-demo       # Start full-stack with FakeRest data provider
+npm run dev:sqlwebapi # Start Vite using the SQLWebAPI data provider
 ```
 
 ### Testing and Code Quality
@@ -26,6 +27,7 @@ make lint             # Run ESLint and Prettier checks
 
 ```bash
 make build            # Build production bundle (runs tsc + vite build)
+npm run build:sqlwebapi # Build the SQLWebAPI frontend bundle
 ```
 
 ### Database Management
@@ -134,15 +136,56 @@ Located in `supabase/functions/`:
 
 #### Data Providers
 
-Two data providers are available:
+Three data providers are available:
 1. **Supabase** (default): Production backend using PostgreSQL
 2. **FakeRest**: In-browser fake API for development/demos, resets on page reload
+3. **SQLWebAPI**: SQL Server-backed HTTP API using `ra-data-simple-rest`
 
 When using FakeRest, database views are emulated in the frontend. Test data generators are in `src/components/atomic-crm/providers/fakerest/dataGenerator/`.
+
+The SQLWebAPI provider lives in `src/components/atomic-crm/providers/sqlwebapi/`. Its Vite entry point is `sqlwebapi/main.tsx`, which renders `sqlwebapi/App.tsx` with the SQLWebAPI `dataProvider`, `authProvider`, and `UpLoginPage`.
+
+SQLWebAPI runtime configuration comes from `window.__APP_CONFIG__` or Vite env values:
+- `VITE_SQLWEBAPI_URL` defaults to `http://localhost:8081` in `vite.sqlwebapi.config.ts`
+- `VITE_SQLWEBAPI_SERVICE` / `VITE_SERVICE` defaults to `crmapi`
+
+SQLWebAPI URLs should be built through `runtimeConfig.ts` helpers such as `getSqlWebApiBaseUrl()`, `buildSqlWebApiUrl()`, and `resolveSqlWebApiAttachmentUrl()` rather than hand-concatenating paths.
+
+The SQL Server schema and stored procedures are under `sqlwebapi/dbProj/DbProjAtomicCrm/`. Prefer editing the granular files in `StoredProcedures/`, `Tables/`, `Schemas/`, and related database-project folders when present. Treat the generated aggregate SQL files as outputs unless the workflow explicitly requires updating them.
 
 #### Filter Syntax
 
 List filters follow the `ra-data-postgrest` convention with operator concatenation: `field_name@operator` (e.g., `first_name@eq`). The FakeRest adapter maps these to FakeRest syntax at runtime.
+
+#### Frontend Coding Conventions
+
+The frontend uses ra-core (react-admin headless) for data fetching, routing, and CRUD logic, with shadcn-admin-kit and shadcn/ui for the UI layer.
+
+- Import form inputs (`TextInput`, `SelectInput`, `ReferenceInput`, etc.) from `@/components/admin/`, not directly from shadcn/ui. The admin layer wraps shadcn components with ra-core integration for labels, validation, and data binding.
+- Import pure UI components (`Card`, `Button`, `Badge`, `Sheet`, etc.) from `@/components/ui/`.
+- Domain configuration such as deal stages, note statuses, task types, and company sectors comes from `useConfigurationContext()` and should not be hardcoded.
+- Standard resources follow this structure: `ContactList.tsx`, `ContactShow.tsx`, `ContactEdit.tsx`, `ContactCreate.tsx`, shared `ContactInputs.tsx`, and `index.tsx` exporting `{ list, show, edit, create, recordRepresentation }`.
+- Register resources in `root/CRM.tsx` with `<Resource name="contacts" {...contacts} />`.
+- For standard CRUD, prefer ra-core hooks such as `useListContext()`, `useShowContext()`, `useGetList()`, `useGetOne()`, and `useGetIdentity()`.
+- For queries or mutations not covered by ra-core hooks, add a custom `CrmDataProvider` method and call it via `useQuery` or `useMutation` with `useDataProvider<CrmDataProvider>()`.
+- Forms use `Form` from ra-core and `FormToolbar` for submit/cancel actions. Use `useFormContext()` for imperative form operations such as `setValue`, `reset`, and `getValues`.
+- Top-level resource forms use full-page `CreateBase`/`EditBase` with `Card`, while inline or sub-resource forms on mobile use `CreateSheet`/`EditSheet` from `misc/`.
+- Split large forms into semantic input sub-components, such as identity and position sections for contacts.
+- Use `ToggleFilterButton` and `ActiveFilterButton` for filter UI. Filters apply immediately without an "Apply" button.
+- Major pages should have desktop and mobile variants. Use `useIsMobile()` to branch: desktop pages generally use 2-column grids, mobile pages use `MobileHeader`/`MobileContent`, and mobile lists use `InfiniteListBase` for scroll pagination.
+
+#### Backend Coding Conventions
+
+There is no custom backend server. Server-side logic uses Supabase: PostgreSQL tables, views, triggers, RLS, Auth API, Storage, and Edge Functions.
+
+- Prefer frontend-only solutions via custom dataProvider methods calling the Supabase/PostgREST API when that keeps the behavior simple and maintainable.
+- For aggregation or read optimization, create or update database views. PostgREST exposes views like tables.
+- When table columns change, update related views such as `contacts_summary` and `companies_summary`.
+- For complex multi-table writes, prefer a Supabase Edge Function over stored procedures/RPC. On the frontend, expose the edge function as a custom dataProvider method.
+- Shared Edge Function utilities live in `supabase/functions/_shared/`; reuse authentication, Supabase admin, CORS, and utility helpers from there.
+- Edge Functions follow the middleware chain pattern: CORS preflight, `authenticate()`, then the handler.
+- Edge Functions use `verify_jwt = false` in `config.toml`, so JWT validation is handled manually with `authenticate()`.
+- New tables need RLS policies and the auto-set `sales_id` trigger.
 
 ## Development Workflows
 
@@ -178,6 +221,8 @@ Import `test-data/contacts.csv` via the Contacts page → Import button.
 ### Accessing Local Services During Development
 
 - Frontend: http://localhost:5173/
+- SQLWebAPI frontend: http://localhost:5173/ when started with `npm run dev:sqlwebapi`
+- SQLWebAPI default API base: http://localhost:8081/crmapi
 - Supabase Dashboard: http://localhost:54323/
 - REST API: http://127.0.0.1:54321
 - Storage (attachments): http://localhost:54323/project/default/storage/buckets/attachments

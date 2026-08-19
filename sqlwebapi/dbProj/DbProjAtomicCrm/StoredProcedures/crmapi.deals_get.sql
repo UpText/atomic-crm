@@ -1,4 +1,10 @@
- CREATE  PROCEDURE [crmapi].[deals_get](
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+EXEC [crmapi].deals_get @filter='{"company_id":43}',@first_row='0',@last_row='24',@sort_field='name',@sort_order='ASC',@auth_tenant='demo'
+GO
+ ALTER  PROCEDURE [crmapi].[deals_get](
     @ID varchar(max) = NULL,
     @filter varchar(max)=NULL,
     @first_row INT = 0,
@@ -11,12 +17,23 @@ BEGIN
     DECLARE @search NVARCHAR(200) = (SELECT TOP 1 '%' + value + '%' FROM OPENJSON(@filter, '$."@or"'));
     DECLARE @archived_at_is_null bit = 0;
     DECLARE @archived_at_not_null bit = 0;
- 
+    DECLARE @company_id INT = JSON_VALUE(@filter, N'$.company_id');
 
-    IF JSON_VALUE(@filter, '$."archived_at@is"') = 'null'
+
+    IF EXISTS (
+        SELECT 1
+        FROM OPENJSON(@filter)
+        WHERE [key] = 'archived_at@is'
+          AND [type] = 0
+    )
         SET @archived_at_is_null = 1;
 
-    IF JSON_VALUE(@filter, '$."archived_at@not.is"') = 'null'
+    IF EXISTS (
+        SELECT 1
+        FROM OPENJSON(@filter)
+        WHERE [key] = 'archived_at@not.is'
+          AND [type] = 0
+    )
         SET @archived_at_not_null = 1;
 
     SELECT
@@ -42,8 +59,11 @@ BEGIN
       AND (
             @search IS NULL
             OR name LIKE @search
+            OR category LIKE @search
             OR description LIKE @search
       )
+     AND (@company_id IS NULL OR company_id = @company_id)
+
     ORDER BY
         CASE WHEN @sort_field = 'id' AND @sort_order = 'ASC' THEN id END ASC,
         CASE WHEN @sort_field = 'id' AND @sort_order = 'DESC' THEN id END DESC,
@@ -65,3 +85,4 @@ BEGIN
     OFFSET @first_row ROWS
     FETCH NEXT (@last_row - @first_row + 1) ROWS ONLY;
 END
+GO
