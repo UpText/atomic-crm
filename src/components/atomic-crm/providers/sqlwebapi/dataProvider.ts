@@ -61,7 +61,6 @@ export const httpClient = async (
   }
 };
 
-
 const swa = getSqlWebApiUrl() ?? "";
 const service = getSqlWebApiService() ?? "";
 
@@ -69,9 +68,7 @@ if (!swa) {
   throw new Error("Please set the VITE_SQLWEBAPI_URL environment variable");
 }
 if (!service) {
-  throw new Error(
-    "Please set the VITE_SQLWEBAPI_SERVICE environment variable",
-  );
+  throw new Error("Please set the VITE_SQLWEBAPI_SERVICE environment variable");
 }
 
 const sqlWebApiBaseUrl = getSqlWebApiBaseUrl();
@@ -235,11 +232,54 @@ const normalizeNoteRecord = <T extends { attachments?: RAFile[] | null }>(
   };
 };
 
+const normalizeIdentifierArray = (value: unknown): Identifier[] => {
+  if (Array.isArray(value)) {
+    return value as Identifier[];
+  }
+
+  if (typeof value !== "string") {
+    return [];
+  }
+
+  try {
+    const parsedValue = JSON.parse(value);
+    return Array.isArray(parsedValue) ? parsedValue : [];
+  } catch {
+    return [];
+  }
+};
+
+const normalizeDealRecord = <T extends { contact_ids?: unknown }>(
+  record: T,
+): T & { contact_ids: Identifier[] } => ({
+  ...record,
+  contact_ids: normalizeIdentifierArray(record.contact_ids),
+});
+
+const serializeDealContactIds = <T extends { data: { contact_ids?: unknown } }>(
+  params: T,
+): T => {
+  if (!Array.isArray(params.data.contact_ids)) {
+    return params;
+  }
+
+  return {
+    ...params,
+    data: {
+      ...params.data,
+      contact_ids: JSON.stringify(params.data.contact_ids),
+    },
+  };
+};
+
 const dataProviderWithCustomMethods = {
   ...baseDataProvider,
   async getList(resource: string, params: GetListParams) {
     if (resource === "companies") {
-      const response = await baseDataProvider.getList("companies_summary", params);
+      const response = await baseDataProvider.getList(
+        "companies_summary",
+        params,
+      );
       return {
         ...response,
         data: response.data.map(normalizeCompanyRecord),
@@ -250,6 +290,13 @@ const dataProviderWithCustomMethods = {
     }
 
     const response = await baseDataProvider.getList(resource, params);
+
+    if (resource === "deals") {
+      return {
+        ...response,
+        data: response.data.map(normalizeDealRecord),
+      };
+    }
 
     if (!noteResources.has(resource)) {
       return response;
@@ -262,7 +309,10 @@ const dataProviderWithCustomMethods = {
   },
   async getOne(resource: string, params: any) {
     if (resource === "companies") {
-      const response = await baseDataProvider.getOne("companies_summary", params);
+      const response = await baseDataProvider.getOne(
+        "companies_summary",
+        params,
+      );
       return {
         ...response,
         data: normalizeCompanyRecord(response.data),
@@ -274,6 +324,13 @@ const dataProviderWithCustomMethods = {
 
     const response = await baseDataProvider.getOne(resource, params);
 
+    if (resource === "deals") {
+      return {
+        ...response,
+        data: normalizeDealRecord(response.data),
+      };
+    }
+
     if (!noteResources.has(resource)) {
       return response;
     }
@@ -284,12 +341,22 @@ const dataProviderWithCustomMethods = {
     };
   },
   async create(resource: string, params: any) {
-    const response = await baseDataProvider.create(resource, params);
+    const response = await baseDataProvider.create(
+      resource,
+      resource === "deals" ? serializeDealContactIds(params) : params,
+    );
 
     if (resource === "companies") {
       return {
         ...response,
         data: normalizeCompanyRecord(response.data),
+      };
+    }
+
+    if (resource === "deals") {
+      return {
+        ...response,
+        data: normalizeDealRecord(response.data),
       };
     }
 
@@ -303,12 +370,22 @@ const dataProviderWithCustomMethods = {
     };
   },
   async update(resource: string, params: any) {
-    const response = await baseDataProvider.update(resource, params);
+    const response = await baseDataProvider.update(
+      resource,
+      resource === "deals" ? serializeDealContactIds(params) : params,
+    );
 
     if (resource === "companies") {
       return {
         ...response,
         data: normalizeCompanyRecord(response.data),
+      };
+    }
+
+    if (resource === "deals") {
+      return {
+        ...response,
+        data: normalizeDealRecord(response.data),
       };
     }
 
@@ -469,12 +546,13 @@ export const dataProvider = withLifecycleCallbacks(
     {
       resource: "contact_notes",
       beforeSave: async (data: ContactNote, _, __) => {
+        const { status: _status, ...noteData } = data;
         if (data.attachments) {
           for (const fi of data.attachments) {
             await uploadToBucket(fi);
           }
         }
-        return data;
+        return noteData;
       },
     },
     {
@@ -557,9 +635,7 @@ export const dataProvider = withLifecycleCallbacks(
     {
       resource: "deals",
       beforeGetList: async (params) => {
-        return applyFullTextSearch(["name", "category", "description"])(
-          params,
-        );
+        return applyFullTextSearch(["name", "category", "description"])(params);
       },
     },
   ],
@@ -666,7 +742,8 @@ const trimTransparentImageWhitespace = async (file: File): Promise<File> => {
     const image = await new Promise<HTMLImageElement>((resolve, reject) => {
       const img = new Image();
       img.onload = () => resolve(img);
-      img.onerror = () => reject(new Error("Failed to load image for trimming"));
+      img.onerror = () =>
+        reject(new Error("Failed to load image for trimming"));
       img.src = imageUrl;
     });
 
@@ -774,18 +851,14 @@ const uploadToBucket = async (
 
   const base64 = arrayBufferToBase64(await uploadFile.arrayBuffer());
 
-  const res = await baseDataProvider.create("objects", 
-    { 
-      data: {
-        bucket_id: "attachments",
-        object_path: uploadFile.name,
-        content_type: uploadFile.type || fi.type || "application/octet-stream",
-        data: base64 
-      }
-    }
-  );
-
- 
+  const res = await baseDataProvider.create("objects", {
+    data: {
+      bucket_id: "attachments",
+      object_path: uploadFile.name,
+      content_type: uploadFile.type || fi.type || "application/octet-stream",
+      data: base64,
+    },
+  });
 
   // const dataContent = fi.src
   //   ? await fetch(fi.src).then((res) => res.blob())

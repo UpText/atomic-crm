@@ -127,7 +127,6 @@ BEGIN
                     cn.sales_id,
                     cn.[date],
                     cn.[text],
-                    cn.[status],
                     JSON_QUERY((
                         SELECT
                             na.id,

@@ -3,7 +3,6 @@ CREATE PROCEDURE [crmapi].[contact_notes_post](
     @sales_id INT = NULL,
     @date DATETIME2 = NULL,
     @text NVARCHAR(MAX) = NULL,
-    @status NVARCHAR(50) = NULL,
     @attachments NVARCHAR(MAX) = NULL,
     @auth_tenant NVARCHAR(255) = NULL
 )
@@ -19,8 +18,8 @@ BEGIN
         ORDER BY id;
     END
 
-    INSERT INTO crm.contact_notes (tenant, contact_id, sales_id, [date], [text], [status])
-    VALUES (@auth_tenant, @contact_id, @sales_id, @date, @text, @status);
+    INSERT INTO crm.contact_notes (tenant, contact_id, sales_id, [date], [text])
+    VALUES (@auth_tenant, @contact_id, @sales_id, @date, @text);
 
     DECLARE @NEWID INT = CAST(SCOPE_IDENTITY() AS INT);
 

@@ -24,7 +24,6 @@ BEGIN
         cn.sales_id,
         cn.[date],
         cn.[text],
-        cn.[status],
         JSON_QUERY((
             SELECT
                 na.id,
@@ -65,8 +64,6 @@ BEGIN
         CASE WHEN @sort_field = 'sales_id' AND @sort_order = 'DESC' THEN cn.sales_id END DESC,
         CASE WHEN @sort_field = 'text' AND @sort_order = 'ASC' THEN cn.[text] END ASC,
         CASE WHEN @sort_field = 'text' AND @sort_order = 'DESC' THEN cn.[text] END DESC,
-        CASE WHEN @sort_field = 'status' AND @sort_order = 'ASC' THEN cn.[status] END ASC,
-        CASE WHEN @sort_field = 'status' AND @sort_order = 'DESC' THEN cn.[status] END DESC,
         CASE WHEN @sort_field = 'date' AND @sort_order = 'ASC' THEN cn.[date] END ASC,
         CASE WHEN @sort_field = 'date' AND @sort_order = 'DESC' THEN cn.[date] END DESC,
         CASE WHEN @sort_field IS NULL THEN cn.id END ASC

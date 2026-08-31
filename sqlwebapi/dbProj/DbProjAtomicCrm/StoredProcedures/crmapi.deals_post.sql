@@ -8,6 +8,7 @@ CREATE PROCEDURE [crmapi].[deals_post](
     @expected_closing_date datetime2 = NULL,
     @sales_id int = NULL,
     @index int = NULL,
+    @contact_ids nvarchar(max) = NULL,
     @auth_tenant NVARCHAR(255) = NULL
 ) AS
 BEGIN
@@ -51,6 +52,17 @@ BEGIN
     );
 
     DECLARE @NEWID AS VARCHAR(max) = SCOPE_IDENTITY();
+
+    IF @contact_ids IS NOT NULL
+    BEGIN
+        INSERT INTO crm.deal_contacts (tenant, deal_id, contact_id)
+        SELECT DISTINCT @auth_tenant, @NEWID, contact.id
+        FROM OPENJSON(@contact_ids) contact_json
+        INNER JOIN crm.contacts contact
+            ON contact.id = contact_json.value
+           AND contact.tenant = @auth_tenant;
+    END
+
     EXEC crmapi.deals_get @ID = @NEWID, @auth_tenant = @auth_tenant;
     RETURN 200;
 END

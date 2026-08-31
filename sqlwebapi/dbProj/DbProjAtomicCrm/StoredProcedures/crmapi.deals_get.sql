@@ -1,10 +1,4 @@
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-EXEC [crmapi].deals_get @filter='{"company_id":43}',@first_row='0',@last_row='24',@sort_field='name',@sort_order='ASC',@auth_tenant='demo'
-GO
- ALTER  PROCEDURE [crmapi].[deals_get](
+CREATE PROCEDURE [crmapi].[deals_get](
     @ID varchar(max) = NULL,
     @filter varchar(max)=NULL,
     @first_row INT = 0,
@@ -50,7 +44,15 @@ BEGIN
         CONVERT(varchar(10), expected_closing_date, 23) AS expected_closing_date,
         sales_id,
         [index],
-        COUNT(*) OVER() AS total_rows
+        COUNT(*) OVER() AS total_rows,
+        COALESCE((
+            SELECT
+                '[' + STRING_AGG(CONVERT(varchar(20), dc.contact_id), ',')
+                WITHIN GROUP (ORDER BY dc.contact_id) + ']'
+            FROM crm.deal_contacts dc
+            WHERE dc.deal_id = crm.deals.id
+              AND dc.tenant = @auth_tenant
+        ), '[]') AS contact_ids
     FROM crm.deals
     WHERE tenant = @auth_tenant
       AND (@ID IS NULL OR @ID = id)
@@ -85,4 +87,3 @@ BEGIN
     OFFSET @first_row ROWS
     FETCH NEXT (@last_row - @first_row + 1) ROWS ONLY;
 END
-GO

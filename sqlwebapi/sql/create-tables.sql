@@ -154,7 +154,6 @@ CREATE TABLE crm.contact_note (
     sales_id    INT NOT NULL,
     [date]      DATETIME2(0) NOT NULL,
     [text]      NVARCHAR(MAX) NOT NULL,
-    status      NVARCHAR(50) NOT NULL,
 
     CONSTRAINT FK_contact_note_contact FOREIGN KEY (contact_id) REFERENCES crm.contact(id) ON DELETE CASCADE,
     CONSTRAINT FK_contact_note_sales FOREIGN KEY (sales_id) REFERENCES crm.sales(id)

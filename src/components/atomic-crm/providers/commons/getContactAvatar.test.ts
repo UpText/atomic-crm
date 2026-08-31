@@ -3,14 +3,29 @@ import type { Contact, EmailAndType } from "../../types";
 import { getContactAvatar, hash } from "./getContactAvatar";
 
 describe("getContactAvatar", () => {
+  const originalCrypto = globalThis.crypto;
+
   beforeAll(() => {
     vi.mock("../../misc/fetchWithTimeout", () => ({
       fetchWithTimeout: vi.fn(),
     }));
   });
+  afterEach(() => {
+    vi.stubGlobal("crypto", originalCrypto);
+  });
   afterAll(() => {
     vi.resetAllMocks();
+    vi.unstubAllGlobals();
   });
+
+  it("should hash emails when crypto.subtle is unavailable", async () => {
+    vi.stubGlobal("crypto", {});
+
+    await expect(hash("anthony@marmelab.com")).resolves.toBe(
+      "b1e5a85e4b9d701bbf7937dc82d8b05fd80b9467b7ffaaae1b429a368f82ea88",
+    );
+  });
+
   it("should return gravatar URL for anthony@marmelab.com", async () => {
     const email: EmailAndType[] = [
       { email: "anthony@marmelab.com", type: "Work" },

@@ -316,7 +316,7 @@ CREATE OR ALTER   PROCEDURE [crmapi].[contact_notes_Get](@ID varchar(max) = NULL
           REPLACE(REPLACE(@ids_raw, '(', ''), ')', '') 
           + ']'
 
-     SELECT  id AS id, id, contact_id, sales_id, date, text, status, COUNT(*) OVER() AS total_rows 
+     SELECT  id AS id, id, contact_id, sales_id, date, text, COUNT(*) OVER() AS total_rows
           FROM crm.contact_notes 
      WHERE (
                @ID IS NULL
@@ -342,8 +342,6 @@ CREATE OR ALTER   PROCEDURE [crmapi].[contact_notes_Get](@ID varchar(max) = NULL
             CASE WHEN @sort_field = 'sales_id' AND @sort_order = 'DESC' THEN sales_id END DESC, 
             CASE WHEN @sort_field = 'text' AND @sort_order = 'ASC' THEN text END ASC, 
             CASE WHEN @sort_field = 'text' AND @sort_order = 'DESC' THEN text END DESC, 
-            CASE WHEN @sort_field = 'status' AND @sort_order = 'ASC' THEN status END ASC, 
-            CASE WHEN @sort_field = 'status' AND @sort_order = 'DESC' THEN status END DESC, 
             CASE WHEN @sort_field = 'date' AND @sort_order = 'ASC' THEN date END ASC,
             CASE WHEN @sort_field = 'date' AND @sort_order = 'DESC' THEN date END DESC,
             CASE WHEN @sort_field IS NULL THEN id END ASC 
@@ -361,8 +359,7 @@ CREATE
     @contact_id int = NULL,
     @sales_id int = NULL,
     @date datetime2 = NULL,
-    @text nvarchar(max) = NULL,
-    @status nvarchar(50) = NULL
+    @text nvarchar(max) = NULL
 ) AS
 
 IF @sales_id = 0 SET @sales_id = 1
@@ -371,15 +368,13 @@ INSERT INTO crm.contact_notes (
         contact_id,
         sales_id,
         date,
-        text,
-        status
+        text
     )
 VALUES (
         @contact_id,
         @sales_id,
         @date,
-        @text,
-        @status
+        @text
     )
 DECLARE @NEWID AS VARCHAR(max) = SCOPE_IDENTITY() EXEC crmapi.contact_notes_Get @ID = @NEWID RETURN 200 -- OK
 GO
@@ -393,7 +388,6 @@ CREATE OR ALTER     PROCEDURE crmapi.contact_notes_put(@ID varchar(max)
 , @sales_id int = NULL 
 , @date datetime2 = NULL 
 , @text nvarchar(max)   = NULL 
-, @status nvarchar(50)   = NULL 
 ) AS
 IF NOT EXISTS(SELECT id FROM crm.contact_notes WHERE @ID = id)  
 BEGIN
@@ -404,8 +398,7 @@ UPDATE crm.contact_notes  SET
     contact_id = COALESCE(@contact_id,contact_id), 
      sales_id = COALESCE(@sales_id,sales_id), 
      date = COALESCE(@date,date), 
-     text = COALESCE(@text,text), 
-     status = COALESCE(@status,status)  
+     text = COALESCE(@text,text)
      WHERE @ID = id 
 EXEC crmapi.contact_notes_Get  @ID=@ID 
 RETURN 200 -- OK

@@ -4,7 +4,6 @@ CREATE PROCEDURE [crmapi].[contact_notes_put](
     @sales_id INT = NULL,
     @date DATETIME2 = NULL,
     @text NVARCHAR(MAX) = NULL,
-    @status NVARCHAR(50) = NULL,
     @attachments NVARCHAR(MAX) = NULL,
     @auth_tenant NVARCHAR(255) = NULL
 )
@@ -40,8 +39,7 @@ BEGIN
         SET contact_id = COALESCE(@contact_id, contact_id),
             sales_id = COALESCE(@sales_id, sales_id),
             [date] = COALESCE(@date, [date]),
-            [text] = COALESCE(@text, [text]),
-            [status] = COALESCE(@status, [status])
+            [text] = COALESCE(@text, [text])
         WHERE id = @id_int
           AND tenant = @auth_tenant;
 

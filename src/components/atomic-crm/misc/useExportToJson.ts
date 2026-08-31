@@ -13,6 +13,7 @@ import type {
   Contact,
   ContactNote,
   Deal,
+  DealNote,
   Sale,
   Tag,
   Task,
@@ -111,6 +112,13 @@ type ExportSchema = {
     status?: string;
     attachments?: Array<{ url: string; name: string }>;
   }>;
+  deal_notes: Array<{
+    deal_id: number;
+    sales_id: number;
+    text: string;
+    date: string;
+    attachments?: Array<{ url: string; name: string }>;
+  }>;
   tasks: Array<{
     contact_id: number;
     sales_id: number;
@@ -129,11 +137,14 @@ const readBlobAsDataUrl = (blob: Blob) =>
   new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onloadend = () => resolve(reader.result as string);
-    reader.onerror = () => reject(reader.error ?? new Error("Failed to read blob"));
+    reader.onerror = () =>
+      reject(reader.error ?? new Error("Failed to read blob"));
     reader.readAsDataURL(blob);
   });
 
-export const embedFileSrcForExport = async (src?: string): Promise<string | undefined> => {
+export const embedFileSrcForExport = async (
+  src?: string,
+): Promise<string | undefined> => {
   if (!src) {
     return undefined;
   }
@@ -155,7 +166,10 @@ export const embedFileSrcForExport = async (src?: string): Promise<string | unde
   }
 };
 
-export const useExportToJson = (): [ExportFromJsonState, ExportFromJsonFunction] => {
+export const useExportToJson = (): [
+  ExportFromJsonState,
+  ExportFromJsonFunction,
+] => {
   const { identity } = useGetIdentity();
   const dataProvider = useDataProvider<CrmDataProvider>();
   const [state, setState] = useState<ExportFromJsonState>({
@@ -174,28 +188,38 @@ export const useExportToJson = (): [ExportFromJsonState, ExportFromJsonFunction]
     });
 
     try {
-      const [sales, companies, contacts, deals, notes, tasks, tags, configuration] =
-        await Promise.all([
-          getAllRecords<Sale>(dataProvider, "sales"),
-          getAllRecords<Company>(dataProvider, "companies"),
-          getAllRecords<Contact>(dataProvider, "contacts"),
-          getAllRecords<Deal>(dataProvider, "deals"),
-          getAllRecords<ContactNote>(dataProvider, "contact_notes"),
-          getAllRecords<Task>(dataProvider, "tasks"),
-          getAllRecords<Tag>(dataProvider, "tags"),
-          dataProvider.getConfiguration().catch(() => undefined),
-        ]);
+      const [
+        sales,
+        companies,
+        contacts,
+        deals,
+        contactNotes,
+        dealNotes,
+        tasks,
+        tags,
+        configuration,
+      ] = await Promise.all([
+        getAllRecords<Sale>(dataProvider, "sales"),
+        getAllRecords<Company>(dataProvider, "companies"),
+        getAllRecords<Contact>(dataProvider, "contacts"),
+        getAllRecords<Deal>(dataProvider, "deals"),
+        getAllRecords<ContactNote>(dataProvider, "contact_notes"),
+        getAllRecords<DealNote>(dataProvider, "deal_notes"),
+        getAllRecords<Task>(dataProvider, "tasks"),
+        getAllRecords<Tag>(dataProvider, "tags"),
+        dataProvider.getConfiguration().catch(() => undefined),
+      ]);
 
       const salesIdMap = createIdMap(sales);
       const companyIdMap = createIdMap(companies);
       const contactIdMap = createIdMap(contacts);
       const dealIdMap = createIdMap(deals);
+      const currentSalesId = getSalesIdForExport(identity.id, salesIdMap);
       const tagNameMap = new Map(tags.map((tag) => [tag.id, tag.name]));
       const sectorValueByLabel = new Map(
-        (configuration?.companySectors ?? defaultCompanySectors).map((sector) => [
-          sector.label,
-          sector.value,
-        ]),
+        (configuration?.companySectors ?? defaultCompanySectors).map(
+          (sector) => [sector.label, sector.value],
+        ),
       );
 
       const exportedCompanyLogos = await Promise.all(
@@ -213,7 +237,9 @@ export const useExportToJson = (): [ExportFromJsonState, ExportFromJsonFunction]
           id: companyIdMap.get(company.id)!,
           name: company.name,
           sales_id:
-            company.sales_id != null ? salesIdMap.get(company.sales_id) : undefined,
+            company.sales_id != null
+              ? salesIdMap.get(company.sales_id)
+              : undefined,
           logo_src: exportedCompanyLogos[index],
           logo_title: company.logo?.title || undefined,
           logo_path: company.logo?.path || undefined,
@@ -239,7 +265,9 @@ export const useExportToJson = (): [ExportFromJsonState, ExportFromJsonFunction]
         contacts: contacts.map((contact) => ({
           id: contactIdMap.get(contact.id)!,
           sales_id:
-            contact.sales_id != null ? salesIdMap.get(contact.sales_id) : undefined,
+            contact.sales_id != null
+              ? salesIdMap.get(contact.sales_id)
+              : undefined,
           company_id:
             contact.company_id != null
               ? companyIdMap.get(contact.company_id)
@@ -255,24 +283,31 @@ export const useExportToJson = (): [ExportFromJsonState, ExportFromJsonFunction]
           emails: contact.email_jsonb?.length ? contact.email_jsonb : undefined,
           phones: contact.phone_jsonb?.length ? contact.phone_jsonb : undefined,
           tags: contact.tags
-            .map((tagId) => tagNameMap.get(Number(tagId)) ?? tagNameMap.get(tagId as number))
+            .map(
+              (tagId) =>
+                tagNameMap.get(Number(tagId)) ??
+                tagNameMap.get(tagId as number),
+            )
             .filter((tagName): tagName is string => !!tagName),
           created_at: contact.first_seen || undefined,
           updated_at: contact.last_seen || undefined,
         })),
         deals: deals
-          .filter(
-            (deal) =>
+          .filter((deal) => {
+            const contactIds = getDealContactIdsForExport(deal);
+
+            return (
               salesIdMap.has(deal.sales_id) &&
               companyIdMap.has(deal.company_id) &&
-              deal.contact_ids.every((contactId) => contactIdMap.has(contactId)),
-          )
+              contactIds.every((contactId) => contactIdMap.has(contactId))
+            );
+          })
           .map((deal) => ({
             id: dealIdMap.get(deal.id)!,
             sales_id:
               deal.sales_id != null ? salesIdMap.get(deal.sales_id) : undefined,
             company_id: companyIdMap.get(deal.company_id)!,
-            contact_ids: deal.contact_ids.map(
+            contact_ids: getDealContactIdsForExport(deal).map(
               (contactId) => contactIdMap.get(contactId)!,
             ),
             name: deal.name,
@@ -286,28 +321,78 @@ export const useExportToJson = (): [ExportFromJsonState, ExportFromJsonFunction]
             expected_closing_date: deal.expected_closing_date || undefined,
             index: deal.index,
           })),
-        notes: notes
-          .filter(
-            (note) =>
-              salesIdMap.has(note.sales_id) && contactIdMap.has(note.contact_id),
-          )
+        notes: contactNotes
           .map((note) => ({
-            contact_id: contactIdMap.get(note.contact_id)!,
-            sales_id: salesIdMap.get(note.sales_id)!,
+            note,
+            salesId: getSalesIdForExport(
+              note.sales_id,
+              salesIdMap,
+              currentSalesId,
+            ),
+            contactId: contactIdMap.get(note.contact_id),
+          }))
+          .filter(
+            (
+              item,
+            ): item is {
+              note: ContactNote;
+              salesId: number;
+              contactId: number;
+            } => item.salesId != null && item.contactId != null,
+          )
+          .map(({ note, salesId, contactId }) => ({
+            contact_id: contactId,
+            sales_id: salesId,
             text: note.text,
             date: note.date,
             status: note.status || undefined,
+            attachments: getNoteAttachmentsForExport(note.attachments),
+          })),
+        deal_notes: dealNotes
+          .map((note) => ({
+            note,
+            salesId: getSalesIdForExport(
+              note.sales_id,
+              salesIdMap,
+              currentSalesId,
+            ),
+            dealId: dealIdMap.get(note.deal_id),
+          }))
+          .filter(
+            (
+              item,
+            ): item is {
+              note: DealNote;
+              salesId: number;
+              dealId: number;
+            } => item.salesId != null && item.dealId != null,
+          )
+          .map(({ note, salesId, dealId }) => ({
+            deal_id: dealId,
+            sales_id: salesId,
+            text: note.text,
+            date: note.date,
+            attachments: getNoteAttachmentsForExport(note.attachments),
           })),
         tasks: tasks
-          .filter(
-            (task) =>
-              task.sales_id != null &&
-              salesIdMap.has(task.sales_id) &&
-              contactIdMap.has(task.contact_id),
-          )
           .map((task) => ({
-            contact_id: contactIdMap.get(task.contact_id)!,
-            sales_id: salesIdMap.get(task.sales_id!)!,
+            task,
+            salesId: getSalesIdForExport(
+              task.sales_id,
+              salesIdMap,
+              currentSalesId,
+            ),
+            contactId: contactIdMap.get(task.contact_id),
+          }))
+          .filter(
+            (
+              item,
+            ): item is { task: Task; salesId: number; contactId: number } =>
+              item.salesId != null && item.contactId != null,
+          )
+          .map(({ task, salesId, contactId }) => ({
+            contact_id: contactId,
+            sales_id: salesId,
             type: task.type || "none",
             text: task.text,
             due_date: task.due_date || undefined,
@@ -368,6 +453,35 @@ const createIdMap = <T extends { id: Identifier }>(records: T[]) => {
     map.set(record.id, index + 1);
     return map;
   }, new Map<Identifier, number>());
+};
+
+export const getDealContactIdsForExport = (
+  deal: Pick<Partial<Deal>, "contact_ids">,
+) => (Array.isArray(deal.contact_ids) ? deal.contact_ids : []);
+
+export const getSalesIdForExport = (
+  salesId: Identifier | null | undefined,
+  salesIdMap: Map<Identifier, number>,
+  fallbackSalesId?: number,
+) => {
+  if (salesId != null && salesIdMap.has(salesId)) {
+    return salesIdMap.get(salesId);
+  }
+
+  return fallbackSalesId;
+};
+
+export const getNoteAttachmentsForExport = (
+  attachments?: Array<{ src?: string; title?: string; path?: string }> | null,
+) => {
+  const exportedAttachments = attachments
+    ?.filter((attachment) => !!attachment.src)
+    .map((attachment) => ({
+      url: attachment.src!,
+      name: attachment.title || attachment.path || "attachment",
+    }));
+
+  return exportedAttachments?.length ? exportedAttachments : undefined;
 };
 
 const downloadJson = (data: ExportSchema, filename: string) => {

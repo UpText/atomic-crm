@@ -9,6 +9,7 @@ CREATE PROCEDURE [crmapi].[deals_put](
     @expected_closing_date datetime2 = NULL,
     @sales_id int = NULL,
     @index int = NULL,
+    @contact_ids nvarchar(max) = NULL,
     @auth_tenant NVARCHAR(255) = NULL
 ) AS
 BEGIN
@@ -31,6 +32,20 @@ BEGIN
         [index] = COALESCE(@index, [index])
     WHERE id = @ID
       AND tenant = @auth_tenant;
+
+    IF @contact_ids IS NOT NULL
+    BEGIN
+        DELETE FROM crm.deal_contacts
+        WHERE deal_id = @ID
+          AND tenant = @auth_tenant;
+
+        INSERT INTO crm.deal_contacts (tenant, deal_id, contact_id)
+        SELECT DISTINCT @auth_tenant, @ID, contact.id
+        FROM OPENJSON(@contact_ids) contact_json
+        INNER JOIN crm.contacts contact
+            ON contact.id = contact_json.value
+           AND contact.tenant = @auth_tenant;
+    END
 
     EXEC crmapi.deals_get @ID = @ID, @auth_tenant = @auth_tenant;
     RETURN 200;

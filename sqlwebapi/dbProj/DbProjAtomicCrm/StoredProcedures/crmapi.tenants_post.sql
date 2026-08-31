@@ -1,7 +1,8 @@
 CREATE PROCEDURE [crmapi].[tenants_post](
     @tenant NVARCHAR(255),
     @admin_email NVARCHAR(255),
-    @password NVARCHAR(100)
+    @password NVARCHAR(100) = NULL,
+    @passwordHash NVARCHAR(100) = NULL
 )
 AS
 BEGIN
@@ -10,7 +11,7 @@ BEGIN
 
     DECLARE @normalized_tenant NVARCHAR(255) = LTRIM(RTRIM(@tenant));
     DECLARE @normalized_admin_email NVARCHAR(255) = LOWER(LTRIM(RTRIM(@admin_email)));
-    DECLARE @password_hash NVARCHAR(64);
+
 
     IF @normalized_tenant IS NULL OR @normalized_tenant = N''
     BEGIN
@@ -42,13 +43,11 @@ BEGIN
         RETURN 400;
     END
 
-    IF @password IS NULL OR LTRIM(RTRIM(@password)) = N''
+    IF (@passwordHash IS NULL OR LTRIM(RTRIM(@passwordHash)) = N'')
     BEGIN
         RAISERROR('password is required.', 16, 1);
         RETURN 400;
     END
-
-    SET @password_hash = CONVERT(NVARCHAR(64), HASHBYTES('SHA2_256', CONVERT(VARBINARY(MAX), @password)), 2);
 
     IF EXISTS (SELECT 1 FROM crm.tenants WHERE name = @normalized_tenant)
     BEGIN
@@ -101,7 +100,7 @@ BEGIN
         N'User',
         1,
         0,
-        @password_hash
+        @passwordHash
     );
 
     COMMIT TRANSACTION;

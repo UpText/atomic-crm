@@ -9,7 +9,7 @@ import {
 import { JSONParser, type JsonTypes } from "@streamparser/json-whatwg";
 import mime from "mime/lite";
 import type { CrmDataProvider } from "../providers/types";
-import type { RAFile, Tag } from "../types";
+import type { Company, Contact, RAFile, Tag } from "../types";
 import { colors } from "../tags/colors";
 import { useConfigurationContext } from "../root/ConfigurationContext";
 import { contactGender } from "../contacts/contactModel";
@@ -89,6 +89,8 @@ const defaultStats = {
   tasks: 0,
 };
 
+const LOOKUP_PAGE_SIZE = 1000;
+
 const createImportedCompanyLogo = (dataToImport: CompanyImport): RAFile | undefined => {
   if (!dataToImport.logo_src) {
     return undefined;
@@ -155,6 +157,14 @@ export const useImportFromJson = (): [
       contacts: {},
       tags: {},
     };
+    const companyImportsByName = new Map<
+      string,
+      Promise<Identifier | undefined>
+    >();
+    const contactImportsByName = new Map<
+      string,
+      Promise<Identifier | undefined>
+    >();
 
     const importSale = async (
       dataToImport: JsonTypes.JsonPrimitive | JsonTypes.JsonStruct | undefined,
@@ -242,6 +252,50 @@ export const useImportFromJson = (): [
         return;
       }
       try {
+        const nameKey = getCompanyNameKey(dataToImport.name);
+        const existingImport = companyImportsByName.get(nameKey);
+        if (existingImport) {
+          const companyId = await existingImport;
+          if (companyId != null) {
+            idsMaps.companies[dataToImport.id] = companyId;
+          }
+          return companyId;
+        }
+
+        const importPromise = importUniqueCompany(dataToImport);
+        companyImportsByName.set(nameKey, importPromise);
+        const companyId = await importPromise;
+        if (companyId != null) {
+          idsMaps.companies[dataToImport.id] = companyId;
+        }
+        return companyId;
+      } catch (err) {
+        console.error(err);
+        setState((old) => ({
+          ...old,
+          status: "importing",
+          error: null,
+          failedImports: {
+            ...old.failedImports,
+            companies: [
+              ...old.failedImports.companies,
+              { ...(dataToImport as any), error: (err as Error).message },
+            ],
+          },
+        }));
+      }
+    };
+
+    const importUniqueCompany = async (dataToImport: CompanyImport) => {
+      try {
+        const existingCompany = await findExistingCompany(
+          dataProvider,
+          dataToImport.name,
+        );
+        if (existingCompany) {
+          return existingCompany.id;
+        }
+
         // Validate sector against configuration
         const sector = dataToImport.sector?.trim();
         if (sector && !companySectors.some((s) => s.value === sector)) {
@@ -292,7 +346,6 @@ export const useImportFromJson = (): [
           },
         });
 
-        idsMaps.companies[dataToImport.id] = data.id;
         setState((old) => ({
           ...old,
           status: "importing",
@@ -302,21 +355,10 @@ export const useImportFromJson = (): [
           },
           error: null,
         }));
-        return data;
+        return data.id;
       } catch (err) {
-        console.error(err);
-        setState((old) => ({
-          ...old,
-          status: "importing",
-          error: null,
-          failedImports: {
-            ...old.failedImports,
-            companies: [
-              ...old.failedImports.companies,
-              { ...(dataToImport as any), error: (err as Error).message },
-            ],
-          },
-        }));
+        companyImportsByName.delete(getCompanyNameKey(dataToImport.name));
+        throw err;
       }
     };
 
@@ -340,6 +382,54 @@ export const useImportFromJson = (): [
       }
 
       try {
+        const nameKey = getContactNameKey(
+          dataToImport.first_name,
+          dataToImport.last_name,
+        );
+        const existingImport = contactImportsByName.get(nameKey);
+        if (existingImport) {
+          const contactId = await existingImport;
+          if (contactId != null) {
+            idsMaps.contacts[dataToImport.id] = contactId;
+          }
+          return contactId;
+        }
+
+        const importPromise = importUniqueContact(dataToImport);
+        contactImportsByName.set(nameKey, importPromise);
+        const contactId = await importPromise;
+        if (contactId != null) {
+          idsMaps.contacts[dataToImport.id] = contactId;
+        }
+        return contactId;
+      } catch (err) {
+        console.error(err);
+        setState((old) => ({
+          ...old,
+          status: "importing",
+          error: null,
+          failedImports: {
+            ...old.failedImports,
+            contacts: [
+              ...old.failedImports.contacts,
+              { ...(dataToImport as any), error: (err as Error).message },
+            ],
+          },
+        }));
+      }
+    };
+
+    const importUniqueContact = async (dataToImport: ContactImport) => {
+      try {
+        const existingContact = await findExistingContact(
+          dataProvider,
+          dataToImport.first_name,
+          dataToImport.last_name,
+        );
+        if (existingContact) {
+          return existingContact.id;
+        }
+
         // Validate gender against valid values
         const gender = dataToImport.gender?.trim();
         if (gender && !contactGender.some((g) => g.value === gender)) {
@@ -407,7 +497,6 @@ export const useImportFromJson = (): [
             last_seen: dataToImport.updated_at,
           },
         });
-        idsMaps.contacts[dataToImport.id] = data.id;
         setState((old) => ({
           ...old,
           status: "importing",
@@ -417,21 +506,12 @@ export const useImportFromJson = (): [
           },
           error: null,
         }));
-        return data;
+        return data.id;
       } catch (err) {
-        console.error(err);
-        setState((old) => ({
-          ...old,
-          status: "importing",
-          error: null,
-          failedImports: {
-            ...old.failedImports,
-            contacts: [
-              ...old.failedImports.contacts,
-              { ...(dataToImport as any), error: (err as Error).message },
-            ],
-          },
-        }));
+        contactImportsByName.delete(
+          getContactNameKey(dataToImport.first_name, dataToImport.last_name),
+        );
+        throw err;
       }
     };
 
@@ -824,6 +904,46 @@ const getType = (value: string | undefined): Types | undefined => {
   const type = value as Types;
   if (TYPES.includes(type)) return type;
   return undefined;
+};
+
+const getCompanyNameKey = (name: string) => name.trim().toLocaleLowerCase();
+
+const getContactNameKey = (firstName: string, lastName: string) =>
+  `${firstName.trim().toLocaleLowerCase()}\u0000${lastName.trim().toLocaleLowerCase()}`;
+
+const findExistingCompany = async (
+  dataProvider: CrmDataProvider,
+  name: string,
+) => {
+  const response = await dataProvider.getList<Company>("companies", {
+    filter: { q: name.trim() },
+    pagination: { page: 1, perPage: LOOKUP_PAGE_SIZE },
+    sort: { field: "id", order: "ASC" },
+  });
+
+  const nameKey = getCompanyNameKey(name);
+  return response.data.find(
+    (company) => getCompanyNameKey(company.name) === nameKey,
+  );
+};
+
+const findExistingContact = async (
+  dataProvider: CrmDataProvider,
+  firstName: string,
+  lastName: string,
+) => {
+  const query = lastName.trim() || firstName.trim();
+  const response = await dataProvider.getList<Contact>("contacts", {
+    filter: { q: query },
+    pagination: { page: 1, perPage: LOOKUP_PAGE_SIZE },
+    sort: { field: "id", order: "ASC" },
+  });
+
+  const nameKey = getContactNameKey(firstName, lastName);
+  return response.data.find(
+    (contact) =>
+      getContactNameKey(contact.first_name, contact.last_name) === nameKey,
+  );
 };
 
 type SaleImport = {
