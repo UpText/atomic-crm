@@ -12,6 +12,8 @@ BEGIN
     DECLARE @archived_at_is_null bit = 0;
     DECLARE @archived_at_not_null bit = 0;
     DECLARE @company_id INT = JSON_VALUE(@filter, N'$.company_id');
+        DECLARE @category NVARCHAR(255) = JSON_VALUE(@filter, N'$.category');
+
 
 
     IF EXISTS (
@@ -63,8 +65,16 @@ BEGIN
             OR name LIKE @search
             OR category LIKE @search
             OR description LIKE @search
+            OR EXISTS(
+                SELECT 1
+                FROM crm.companies co
+                WHERE co.id = crm.deals.company_id
+                  AND co.tenant = @auth_tenant
+                  AND co.name LIKE @search
+            )
       )
      AND (@company_id IS NULL OR company_id = @company_id)
+     AND (@category IS NULL OR category = @category)
 
     ORDER BY
         CASE WHEN @sort_field = 'id' AND @sort_order = 'ASC' THEN id END ASC,

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/ole/UpText/Repos/atomic-crm/sqlwebapi/dbProj/DbProjAtomicCrm/DbProjAtomicCrm.sqlproj": {}
+    "/Users/ole/UpText/Repos/atomic-crm/sqlwebapi/dbproj/DbProjAtomicCrm/DbProjAtomicCrm.sqlproj": {}
   },
   "projects": {
-    "/Users/ole/UpText/Repos/atomic-crm/sqlwebapi/dbProj/DbProjAtomicCrm/DbProjAtomicCrm.sqlproj": {
+    "/Users/ole/UpText/Repos/atomic-crm/sqlwebapi/dbproj/DbProjAtomicCrm/DbProjAtomicCrm.sqlproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/ole/UpText/Repos/atomic-crm/sqlwebapi/dbProj/DbProjAtomicCrm/DbProjAtomicCrm.sqlproj",
+        "projectUniqueName": "/Users/ole/UpText/Repos/atomic-crm/sqlwebapi/dbproj/DbProjAtomicCrm/DbProjAtomicCrm.sqlproj",
         "projectName": "DbProjAtomicCrm",
-        "projectPath": "/Users/ole/UpText/Repos/atomic-crm/sqlwebapi/dbProj/DbProjAtomicCrm/DbProjAtomicCrm.sqlproj",
+        "projectPath": "/Users/ole/UpText/Repos/atomic-crm/sqlwebapi/dbproj/DbProjAtomicCrm/DbProjAtomicCrm.sqlproj",
         "packagesPath": "/Users/ole/.nuget/packages/",
-        "outputPath": "/Users/ole/UpText/Repos/atomic-crm/sqlwebapi/dbProj/DbProjAtomicCrm/obj/",
+        "outputPath": "/Users/ole/UpText/Repos/atomic-crm/sqlwebapi/dbproj/DbProjAtomicCrm/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/ole/NuGet.Config",

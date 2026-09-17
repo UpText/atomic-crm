@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "ACG+4Ff8OXSemqnipfwRtp7KeuhLjs1x3pFvofdDMEDFnTCIhTqaj7Wl6bFmmkGnnzZdliU6gLImPf/GTE4GfA==",
+  "dgSpecHash": "33FZtNmi+x2jzynekBb5j4XLEitjP7vsYnxgu3pPMApskaNxZG9vPKzl8OqRAlP3+AxwV7LVBNUBvoMyHnN2bg==",
   "success": true,
-  "projectFilePath": "/Users/ole/UpText/Repos/atomic-crm/sqlwebapi/dbProj/DbProjAtomicCrm/DbProjAtomicCrm.sqlproj",
+  "projectFilePath": "/Users/ole/UpText/Repos/atomic-crm/sqlwebapi/dbproj/DbProjAtomicCrm/DbProjAtomicCrm.sqlproj",
   "expectedPackageFiles": [],
   "logs": []
 }

@@ -1,3 +1,4 @@
+import type { ComponentProps } from "react";
 import { useGetList } from "ra-core";
 
 import type { Contact, ContactNote } from "../types";
@@ -8,7 +9,12 @@ import { HotContacts } from "./HotContacts";
 import { TasksList } from "./TasksList";
 import { Welcome } from "./Welcome";
 
-export const Dashboard = () => {
+export type DashboardProps = {
+  permissions?: unknown;
+  welcome?: ComponentProps<typeof Welcome>;
+};
+
+export const Dashboard = ({ welcome }: DashboardProps = {}) => {
   const {
     data: dataContact,
     total: totalContact,
@@ -47,7 +53,9 @@ export const Dashboard = () => {
     <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mt-1">
       <div className="md:col-span-3">
         <div className="flex flex-col gap-4">
-          {import.meta.env.VITE_IS_DEMO === "true" ? <Welcome /> : null}
+          {import.meta.env.VITE_IS_DEMO === "true" ? (
+            <Welcome {...welcome} />
+          ) : null}
           <HotContacts />
         </div>
       </div>

@@ -51,7 +51,7 @@ export const isTokenExpired = (token: string | null | undefined) => {
 
   const payload = parseJwtPayload(token);
   if (!payload?.exp) {
-    return false;
+    return true;
   }
 
   return payload.exp <= Math.floor(Date.now() / 1000);
