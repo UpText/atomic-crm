@@ -20,10 +20,10 @@ export const Welcome = ({
         <>
           <p className="text-sm mb-4">
             <a
-              href="https://marmelab.com/atomic-crm"
+              href="https://www.uptext.com"
               className="underline hover:no-underline"
             >
-              Atomic CRM
+              UpTextCrm
             </a>{" "}
             is a template designed to help you quickly build your own CRM.
           </p>
@@ -40,12 +40,12 @@ export const Welcome = ({
             >
               shadcn-admin-kit
             </a>
-            , Atomic CRM is fully open-source. You can find the code at{" "}
+            , UpTextCrm is fully open-source. You can find the code at{" "}
             <a
-              href="https://github.com/marmelab/atomic-crm"
+              href="https://github.com/uptext/UpTextCrm"
               className="underline hover:no-underline"
             >
-              marmelab/atomic-crm
+              uptext/UpTextCrm
             </a>
             .
           </p>

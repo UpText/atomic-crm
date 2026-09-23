@@ -3,7 +3,7 @@
 // CSPs (e.g. Claude.ai) only allow 'self' + 'unsafe-inline' for scripts.
 // Syntax highlighted if the IDE has the es6-string-html extension enabled.
 
-export const TASK_LIST_UI_URI = "ui://atomic-crm/task-list";
+export const TASK_LIST_UI_URI = "ui://uptextcrm/task-list";
 
 export const TASK_LIST_HTML = /*html*/ `
 <!DOCTYPE html>
@@ -319,7 +319,7 @@ export const TASK_LIST_HTML = /*html*/ `
   // ResizeObserver so the host is not spammed with size reports before handshake.
   rpc('ui/initialize', {
     protocolVersion: '2025-06-18',
-    appInfo: { name: 'atomic-crm-task-list', version: '1.0.0' },
+    appInfo: { name: 'uptextcrm-task-list', version: '1.0.0' },
     appCapabilities: {
       tools: { listChanged: false },
       availableDisplayModes: ['inline'],

@@ -1,12 +1,12 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "name": "atomic-crm",
-  "homepage": "https://marmelab.com/atomic-crm/",
+  "name": "uptextcrm",
+  "homepage": "https://www.uptext.com/",
   "items": [
     {
-      "name": "atomic-crm",
+      "name": "uptextcrm",
       "type": "registry:block",
-      "title": "Atomic CRM",
+      "title": "UpTextCrm",
       "description": "A fully fledged CRM application built with Shadcn Admin Kit",
       "registryDependencies": [
         "item",

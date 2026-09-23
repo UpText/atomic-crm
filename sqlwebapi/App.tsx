@@ -14,24 +14,16 @@ const App = () => (
     dashboard={() => (
       <Dashboard
         welcome={{
-          title: "UpCRM",
+          title: "UpTextCrm",
           children: (
             <p className="text-sm">
               <a
                 href="https://www.uptext.com"
                 className="underline hover:no-underline"
               >
-                UpCRM
+                UpTextCrm
               </a>{" "}
-              is a complete CRM system with a SQL Server backend. It is derived
-              from{" "}
-              <a
-                href="https://marmelab.com/atomic-crm"
-                className="underline hover:no-underline"
-              >
-                Atomic CRM
-              </a>
-              .
+              is a complete CRM system with a SQL Server backend.
             </p>
           ),
         }}

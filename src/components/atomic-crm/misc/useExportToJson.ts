@@ -400,7 +400,7 @@ export const useExportToJson = (): [
           })),
       };
 
-      downloadJson(payload, "atomic-crm-export.json");
+      downloadJson(payload, "uptextcrm-export.json");
 
       setState({
         status: "success",
