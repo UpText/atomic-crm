@@ -28,6 +28,7 @@ function EditToolbar({
   onChangePassword: () => void;
   changePasswordDisabled: boolean;
 }) {
+  const translate = useTranslate();
   return (
     <div className="flex justify-end gap-4">
       {showChangePassword ? (
@@ -37,7 +38,7 @@ function EditToolbar({
           onClick={onChangePassword}
           disabled={changePasswordDisabled}
         >
-          Change password
+          {translate("crm.profile.password.change")}
         </Button>
       ) : null}
       <CancelButton />
@@ -93,7 +94,7 @@ export function SalesEdit() {
     mutationKey: ["salesUpdatePassword", record?.id],
     mutationFn: async () => {
       if (!record) {
-        throw new Error("Record not found");
+        throw new Error(translate("resources.sales.edit.record_not_found"));
       }
       return dataProvider.updatePassword(record.id);
     },
@@ -103,14 +104,19 @@ export function SalesEdit() {
       }
       notify(
         isSqlWebApi
-          ? "Password updated successfully"
-          : "A reset password email has been sent to your email address",
+          ? "crm.profile.password_updated"
+          : "crm.profile.password_reset_sent",
       );
     },
     onError: (error) => {
-      notify(error instanceof Error ? error.message : "Failed to update password", {
-        type: "error",
-      });
+      notify(
+        error instanceof Error
+          ? error.message
+          : "crm.profile.password.update_error",
+        {
+          type: "error",
+        },
+      );
     },
   });
 

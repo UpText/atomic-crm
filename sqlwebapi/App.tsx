@@ -1,3 +1,4 @@
+import { useTranslate } from "ra-core";
 import { CRM } from "@/components/atomic-crm/root/CRM";
 import { Dashboard } from "@/components/atomic-crm/dashboard/Dashboard";
 import {
@@ -23,7 +24,7 @@ const App = () => (
               >
                 UpTextCrm
               </a>{" "}
-              is a complete CRM system with a SQL Server backend.
+              <WelcomeDescription />
             </p>
           ),
         }}
@@ -31,5 +32,10 @@ const App = () => (
     )}
   />
 );
+
+const WelcomeDescription = () => {
+  const translate = useTranslate();
+  return <>{translate("crm.dashboard.sqlwebapi_description")}</>;
+};
 
 export default App;

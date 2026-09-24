@@ -449,6 +449,7 @@ export const frenchCrmMessages = {
       load_more: "Charger plus d'activité",
     },
     dashboard: {
+      sqlwebapi_description: "est un CRM complet avec un serveur SQL Server.",
       deals_chart: "Revenus des affaires à venir",
       deals_pipeline: "Pipeline des affaires",
       latest_activity: "Dernière activité",
@@ -569,8 +570,12 @@ export const frenchCrmMessages = {
           "Utilisez cette URL pour connecter votre assistant IA aux données de votre CRM via le Model Context Protocol (MCP).",
       },
       password: {
+        enter_new: "Saisissez un nouveau mot de passe",
+        empty: "Le mot de passe ne peut pas être vide",
+        update_error: "Impossible de modifier le mot de passe",
         change: "Changer le mot de passe",
       },
+      password_updated: "Mot de passe modifié avec succès",
       password_reset_sent:
         "Un e-mail de réinitialisation du mot de passe a été envoyé à votre adresse e-mail",
       record_not_found: "Enregistrement introuvable",

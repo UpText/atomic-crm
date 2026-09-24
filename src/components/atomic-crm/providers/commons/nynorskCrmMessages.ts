@@ -1,0 +1,587 @@
+import type { CrmMessages } from "./englishCrmMessages";
+
+export const nynorskCrmMessages = {
+  resources: {
+    companies: {
+      name: "Verksemd |||| Verksemder",
+      forcedCaseName: "Verksemd",
+      fields: {
+        name: "Verksemdsnamn",
+        website: "Nettstad",
+        linkedin_url: "LinkedIn-URL",
+        phone_number: "Telefonnummer",
+        created_at: "Oppretta",
+        nb_contacts: "Tal på kontaktar",
+        revenue: "Omsetning",
+        sector: "Bransje",
+        size: "Storleik",
+        tax_identifier: "Organisasjonsnummer",
+        address: "Adresse",
+        city: "Poststad",
+        zipcode: "Postnummer",
+        state_abbr: "Delstat",
+        country: "Land",
+        description: "Skildring",
+        context_links: "Kontekstlenkjer",
+        sales_id: "Kundeansvarleg",
+      },
+      empty: {
+        description: "Verksemdslista di er tom.",
+        title: "Fann ingen verksemder",
+      },
+      field_categories: {
+        contact: "Kontakt",
+        additional_info: "Tilleggsinformasjon",
+        address: "Adresse",
+        context: "Kontekst",
+      },
+      action: {
+        create: "Opprett verksemd",
+        edit: "Rediger verksemd",
+        new: "Ny verksemd",
+        show: "Vis verksemd",
+      },
+      added_on: "Lagd til %{date}",
+      followed_by: "Følgd av %{name}",
+      followed_by_you: "Følgd av deg",
+      no_contacts: "Ingen kontaktar",
+      nb_contacts: "%{smart_count} kontakt |||| %{smart_count} kontaktar",
+      nb_deals: "%{smart_count} salshøve |||| %{smart_count} salshøve",
+      sizes: {
+        one_employee: "1 tilsett",
+        two_to_nine_employees: "2–9 tilsette",
+        ten_to_forty_nine_employees: "10–49 tilsette",
+        fifty_to_two_hundred_forty_nine_employees: "50–249 tilsette",
+        two_hundred_fifty_or_more_employees: "250 eller fleire tilsette",
+      },
+      autocomplete: {
+        create_error: "Det oppstod ein feil ved oppretting av verksemda",
+        create_item: "Opprett %{item}",
+        create_label: "Byrj å skrive for å opprette ei ny verksemd",
+      },
+      filters: {
+        only_mine: "Berre verksemder eg er ansvarleg for",
+      },
+    },
+    contacts: {
+      name: "Kontakt |||| Kontaktar",
+      forcedCaseName: "Kontakt",
+      field_categories: {
+        background_info: "Bakgrunnsinformasjon",
+        identity: "Identitet",
+        misc: "Anna",
+        personal_info: "Personopplysningar",
+        position: "Stilling",
+      },
+      fields: {
+        first_name: "Førenamn",
+        last_name: "Etternamn",
+        last_seen: "Sist sett",
+        title: "Tittel",
+        company_id: "Verksemd",
+        email_jsonb: "E-postadresser",
+        email: "E-post",
+        phone_jsonb: "Telefonnummer",
+        phone_number: "Telefonnummer",
+        linkedin_url: "LinkedIn-URL",
+        background: "Bakgrunnsinformasjon (biografi, korleis de møttest osb.)",
+        has_newsletter: "Får nyhendebrev",
+        sales_id: "Kundeansvarleg",
+      },
+      action: {
+        add: "Legg til kontakt",
+        add_first: "Legg til den første kontakten din",
+        create: "Opprett kontakt",
+        edit: "Rediger kontakt",
+        export_vcard: "Eksporter til vCard",
+        new: "Ny kontakt",
+        show: "Vis kontakt",
+      },
+      background: {
+        last_activity_on: "Siste aktivitet %{date}",
+        added_on: "Lagd til %{date}",
+        followed_by: "Følgd av %{name}",
+        followed_by_you: "Følgd av deg",
+        status_none: "Ingen",
+      },
+      position_at: "%{title} hos",
+      position_at_company: "%{title} hos %{company}",
+      empty: {
+        description: "Kontaktlista di er tom.",
+        title: "Fann ingen kontaktar",
+      },
+      import: {
+        title: "Importer kontaktar",
+        button: "Importer CSV",
+        complete:
+          "Importen av kontaktar er fullført. Importerte %{importCount} kontaktar, med %{errorCount} feil",
+        progress:
+          "Importerte %{importCount} / %{rowCount} kontaktar, med %{errorCount} feil.",
+        error:
+          "Klarte ikkje å importere fila. Kontroller at du har valt ei gyldig CSV-fil.",
+        imported: "Importert",
+        remaining_time: "Venta tid som står att:",
+        running: "Importen går føre seg. Ikkje lukk denne fana.",
+        sample_download: "Last ned CSV-døme",
+        sample_hint: "Her er ei CSV-dømefil du kan bruke som mal",
+        stop: "Stopp import",
+        csv_file: "CSV-fil",
+        contacts_label: "kontakt |||| kontaktar",
+      },
+      inputs: {
+        genders: {
+          male: "Han/han",
+          female: "Ho/henne",
+          nonbinary: "Hen/hen",
+        },
+        personal_info_types: {
+          work: "Arbeid",
+          home: "Heim",
+          other: "Anna",
+        },
+      },
+      list: {
+        error_loading: "Feil ved lasting av kontaktar",
+      },
+      bulk_tag: {
+        action: "Etikett",
+        back: "Tilbake til etikettar",
+        create_description:
+          "Opprett ein ny etikett og legg han til dei valde kontaktane.",
+        description:
+          "Vel ein eksisterande etikett eller opprett ein ny for dei valde kontaktane.",
+        empty:
+          "Ingen etikettar enno. Opprett ein for å merkje dei valde kontaktane.",
+        error: "Klarte ikkje å leggje til etiketten på kontaktane",
+        noop: "Dei valde kontaktane har alt denne etiketten",
+        success:
+          "Etikett lagd til på %{smart_count} kontakt |||| Etikett lagd til på %{smart_count} kontaktar",
+        title: "Legg til etikett på kontaktar",
+      },
+      merge: {
+        action: "Slå saman med ein annan kontakt",
+        confirm: "Slå saman kontaktar",
+        current_contact: "Noverande kontakt (vert sletta)",
+        description: "Slå saman denne kontakten med ein annan.",
+        error: "Klarte ikkje å slå saman kontaktane",
+        merging: "Slår saman...",
+        no_additional_data: "Ingen fleire data å slå saman",
+        select_target: "Vel ein kontakt å slå saman med",
+        success: "Kontaktane er slått saman",
+        target_contact: "Målkontakt (vert teken vare på)",
+        title: "Slå saman kontakt",
+        warning_description:
+          "Alle data vert overførte til den andre kontakten. Denne handlinga kan ikkje angrast.",
+        warning_title: "Åtvaring: Handlinga kan ikkje angrast",
+        what_will_be_merged: "Dette vert slått saman:",
+      },
+      filters: {
+        before_last_month: "Før førre månad",
+        before_this_month: "Før denne månaden",
+        before_this_week: "Før denne veka",
+        managed_by_me: "Eg er ansvarleg",
+        search: "Søk etter namn, verksemd...",
+        this_week: "Denne veka",
+        today: "I dag",
+        tags: "Etikettar",
+        tasks: "Oppgåver",
+      },
+      hot: {
+        empty_change_status:
+          "Endre statusen til ein kontakt ved å leggje til eit notat og klikke på «Vis val».",
+        empty_hint: "Kontaktar med statusen «hot» vert viste her.",
+        title: "Varme kontaktar",
+      },
+    },
+    deals: {
+      name: "Salshøve |||| Salshøve",
+      fields: {
+        name: "Namn",
+        description: "Skildring",
+        company_id: "Verksemd",
+        contact_ids: "Kontaktar",
+        category: "Kategori",
+        amount: "Budsjett",
+        expected_closing_date: "Venta avslutningsdato",
+        stage: "Fase",
+      },
+      action: {
+        back_to_deal: "Tilbake til salshøvet",
+        create: "Opprett salshøve",
+        new: "Nytt salshøve",
+      },
+      field_categories: {
+        misc: "Anna",
+      },
+      archived: {
+        action: "Arkiver",
+        error: "Feil: Salshøvet vart ikkje arkivert",
+        list_title: "Arkiverte salshøve",
+        success: "Salshøvet er arkivert",
+        title: "Arkivert salshøve",
+        view: "Vis arkiverte salshøve",
+      },
+      inputs: {
+        linked_to: "Knytt til",
+      },
+      unarchived: {
+        action: "Flytt tilbake til tavla",
+        error: "Feil: Salshøvet vart ikkje gjenoppretta",
+        success: "Salshøvet er gjenoppretta",
+      },
+      updated: "Salshøvet er oppdatert",
+      empty: {
+        before_create: "før du opprettar eit salshøve.",
+        description: "Lista over salshøve er tom.",
+        title: "Fann ingen salshøve",
+      },
+      invalid_date: "Ugyldig dato",
+    },
+    tenants: {
+      name: "Organisasjon |||| Organisasjonar",
+      fields: {
+        name: "Organisasjon",
+        display_name: "Visingsnamn",
+        active: "Aktiv",
+        activated_at: "Aktivert",
+        deactivated_at: "Deaktivert",
+        created_at: "Oppretta",
+        admin_email: "E-posten til administratoren",
+        password: "Passordet til administratoren",
+      },
+      action: {
+        create: "Opprett organisasjon",
+        edit: "Rediger organisasjon",
+        new: "Ny organisasjon",
+      },
+    },
+    notes: {
+      name: "Notat |||| Notat",
+      forcedCaseName: "Notat",
+      fields: {
+        status: "Status",
+        date: "Dato",
+        attachments: "Vedlegg",
+        contact_id: "Kontakt",
+        deal_id: "Salshøve",
+      },
+      action: {
+        add: "Legg til notat",
+        add_first: "Legg til det første notatet ditt",
+        delete: "Slett notat",
+        edit: "Rediger notat",
+        update: "Oppdater notat",
+        add_this: "Legg til dette notatet",
+      },
+      sheet: {
+        create: "Opprett notat",
+        create_for: "Opprett notat for %{name}",
+        edit: "Rediger notat",
+        edit_for: "Rediger notat for %{name}",
+      },
+      deleted: "Notatet er sletta",
+      empty: "Ingen notat enno",
+      author_added: "%{name} la til eit notat",
+      you_added: "Du la til eit notat",
+      me: "Meg",
+      list: {
+        error_loading: "Feil ved lasting av notat",
+      },
+      note_for_contact: "Notat for %{name}",
+      stepper: {
+        hint: "Gå til ei kontaktside og legg til eit notat",
+      },
+      added: "Notatet er lagt til",
+      inputs: {
+        add_note: "Legg til eit notat",
+        options_hint: "(legg ved filer eller endre detaljar)",
+        show_options: "Vis val",
+      },
+      actions: {
+        attach_document: "Legg ved dokument",
+      },
+      validation: {
+        note_or_attachment_required:
+          "Du må leggje til eit notat eller eit vedlegg",
+      },
+    },
+    sales: {
+      name: "Brukar |||| Brukarar",
+      fields: {
+        first_name: "Førenamn",
+        last_name: "Etternamn",
+        email: "E-post",
+        administrator: "Administrator",
+        disabled: "Deaktivert",
+      },
+      create: {
+        error: "Det oppstod ein feil ved oppretting av brukaren.",
+        success:
+          "Brukaren er oppretta og får snart ein e-post for å velje passord.",
+        title: "Opprett ein ny brukar",
+      },
+      edit: {
+        error: "Det oppstod ein feil. Prøv igjen.",
+        record_not_found: "Fann ikkje oppføringa",
+        success: "Brukaren er oppdatert",
+        title: "Rediger %{name}",
+      },
+      action: {
+        new: "Ny brukar",
+      },
+    },
+    tasks: {
+      name: "Oppgåve |||| Oppgåver",
+      forcedCaseName: "Oppgåve",
+      fields: {
+        text: "Skildring",
+        due_date: "Frist",
+        type: "Type",
+        contact_id: "Kontakt",
+        due_short: "frist",
+      },
+      action: {
+        add: "Legg til oppgåve",
+        create: "Opprett oppgåve",
+        edit: "Rediger oppgåve",
+      },
+      actions: {
+        postpone_next_week: "Utset til neste veke",
+        postpone_tomorrow: "Utset til i morgon",
+        title: "Oppgåvehandlingar",
+      },
+      added: "Oppgåva er lagd til",
+      deleted: "Oppgåva er sletta",
+      dialog: {
+        create: "Opprett oppgåve",
+        create_for: "Opprett oppgåve for %{name}",
+      },
+      sheet: {
+        edit: "Rediger oppgåve",
+        edit_for: "Rediger oppgåve for %{name}",
+      },
+      empty: "Ingen oppgåver enno",
+      empty_list_hint:
+        "Oppgåver som er lagde til kontaktane dine, vert viste her.",
+      filters: {
+        later: "Seinare",
+        overdue: "Forfalne",
+        this_week: "Denne veka",
+        today: "I dag",
+        tomorrow: "I morgon",
+        with_pending: "Med uteståande oppgåver",
+      },
+      regarding_contact: "(Vedk.: %{name})",
+      updated: "Oppgåva er oppdatert",
+    },
+    tags: {
+      name: "Etikett |||| Etikettar",
+      action: {
+        add: "Legg til etikett",
+        create: "Opprett ny etikett",
+      },
+      dialog: {
+        color: "Farge",
+        create_title: "Opprett ein ny etikett",
+        edit_title: "Rediger etikett",
+        name_label: "Etikettnamn",
+        name_placeholder: "Skriv inn etikettnamn",
+      },
+    },
+  },
+  crm: {
+    action: {
+      reset_password: "Nullstill passord",
+    },
+    auth: {
+      first_name: "Førenamn",
+      last_name: "Etternamn",
+      confirm_password: "Stadfest passord",
+      confirmation_required:
+        "Følg lenkja vi nett sende deg på e-post for å stadfeste kontoen din.",
+      recovery_email_sent:
+        "Er du registrert som brukar, får du snart ein e-post for å nullstille passordet.",
+      sign_in_failed: "Klarte ikkje å logge inn.",
+      sign_in_google_workspace: "Logg inn med Google Workspace",
+      signup: {
+        create_account: "Opprett konto",
+        create_first_user:
+          "Opprett den første brukarkontoen for å fullføre oppsettet.",
+        creating: "Opprettar...",
+        initial_user_created: "Den første brukaren er oppretta",
+      },
+      welcome_title: "Velkomen til UpTextCrm",
+    },
+    common: {
+      activity: "Aktivitet",
+      added: "lagt til",
+      details: "Detaljar",
+      last_activity_with_date: "siste aktivitet %{date}",
+      load_more: "Last inn fleire",
+      misc: "Anna",
+      past: "Tidlegare",
+      read_more: "Les meir",
+      retry: "Prøv igjen",
+      show_less: "Vis mindre",
+      copied: "Kopiert!",
+      copy: "Kopier",
+      loading: "Lastar...",
+      me: "Meg",
+      task_count: "%{smart_count} oppgåve |||| %{smart_count} oppgåver",
+    },
+    changelog: {
+      title: "Endringslogg",
+    },
+    activity: {
+      added_company: "%{name} la til verksemda",
+      you_added_company: "Du la til verksemda",
+      added_contact: "%{name} la til",
+      you_added_contact: "Du la til",
+      added_note: "%{name} la til eit notat om",
+      you_added_note: "Du la til eit notat om",
+      added_note_about_deal: "%{name} la til eit notat om salshøvet",
+      you_added_note_about_deal: "Du la til eit notat om salshøvet",
+      added_deal: "%{name} la til salshøvet",
+      you_added_deal: "Du la til salshøvet",
+      at_company: "hos",
+      to: "til",
+      load_more: "Last inn meir aktivitet",
+    },
+    dashboard: {
+      sqlwebapi_description:
+        "er eit komplett CRM-system med SQL Server som database.",
+      deals_chart: "Venta salsinntekter",
+      deals_pipeline: "Salspipeline",
+      latest_activity: "Siste aktivitet",
+      latest_activity_error: "Feil ved lasting av siste aktivitet",
+      latest_notes: "Mine siste notat",
+      latest_notes_added_ago: "lagt til %{timeAgo}",
+      stepper: {
+        install: "Installer UpTextCrm",
+        progress: "%{step}/3 fullført",
+        whats_next: "Kva er neste steg?",
+      },
+      upcoming_tasks: "Komande oppgåver",
+    },
+    header: {
+      import_data: "Importer data",
+    },
+    image_editor: {
+      change: "Endre",
+      drop_hint: "Slepp ei fil for å laste opp, eller klikk for å velje henne.",
+      editable_content: "Redigerbart innhald",
+      title: "Last opp og endre biletstorleik",
+      update_image: "Oppdater bilete",
+    },
+    import: {
+      action: {
+        download_error_report: "Last ned feilrapporten",
+        export: "Eksporter",
+        import: "Importer",
+        import_another: "Importer ei anna fil",
+      },
+      error: {
+        unable: "Klarte ikkje å importere fila.",
+        unable_export: "Klarte ikkje å eksportere data.",
+      },
+      idle: {
+        description_1:
+          "Du kan importere brukarar, verksemder, kontaktar, notat og oppgåver.",
+        description_2: "Dataa må vere i ei JSON-fil som følgjer dette dømet:",
+        description_3:
+          "Du kan òg eksportere det gjeldande datasettet som ei JSON-fil som kan importerast.",
+      },
+      status: {
+        all_success: "Alle oppføringane vart importerte.",
+        complete: "Importen er fullført.",
+        export_complete: "Eksporten er fullført.",
+        failed: "Mislukkast",
+        imported: "Importert",
+        in_progress: "Importen går føre seg. Ikkje forlat denne sida.",
+        some_failed: "Nokre oppføringar vart ikkje importerte.",
+        table_caption: "Importstatus",
+      },
+      title: "Importer data",
+    },
+    settings: {
+      about: "Om",
+      companies: {
+        sectors: "Bransjar",
+      },
+      dark_mode_logo: "Logo for mørkt tema",
+      deals: {
+        categories: "Kategoriar",
+        currency: "Valuta",
+        pipeline_help: "Vel kva salsfasar som skal vere med i salspipelinen.",
+        pipeline_statuses: "Pipelinestatusar",
+        stages: "Fasar",
+      },
+      light_mode_logo: "Logo for lyst tema",
+      notes: {
+        statuses: "Statusar",
+      },
+      reset_defaults: "Nullstill til standardverdiar",
+      save_error: "Klarte ikkje å lagre innstillingane",
+      saved: "Innstillingane er lagra",
+      saving: "Lagrar...",
+      tasks: {
+        types: "Typar",
+      },
+      preferences: "Preferansar",
+      title: "Innstillingar",
+      app_title: "Appnamn",
+      sections: {
+        branding: "Profilering",
+      },
+      validation: {
+        duplicate: "Duplikat av %{display_name}: %{items}",
+        in_use:
+          "Kan ikkje fjerne %{display_name} som framleis er i bruk i salshøve: %{items}",
+        validating: "Validerer…",
+        entities: {
+          categories: "kategoriar",
+          stages: "fasar",
+        },
+      },
+    },
+    theme: {
+      dark: "Mørkt",
+      label: "Tema",
+      light: "Lyst",
+      system: "System",
+    },
+    language: "Språk",
+    navigation: {
+      label: "CRM-navigasjon",
+    },
+    profile: {
+      inbound: {
+        description:
+          "Du kan sende e-post til den innkomande e-postadressa på tenaren, til dømes ved å leggje henne til i feltet %{field}. UpTextCrm handsamar e-postane og legg til notat på dei tilhøyrande kontaktane.",
+        title: "Innkomande e-post",
+      },
+      mcp: {
+        title: "MCP-tenar",
+        description:
+          "Bruk denne URL-en for å kople KI-assistenten din til CRM-dataa dine via Model Context Protocol (MCP).",
+      },
+      password: {
+        enter_new: "Skriv inn eit nytt passord",
+        empty: "Passordet kan ikkje vere tomt",
+        update_error: "Klarte ikkje å oppdatere passordet",
+        change: "Endre passord",
+      },
+      password_updated: "Passordet er oppdatert",
+      password_reset_sent:
+        "Ein e-post for nullstilling av passord er send til e-postadressa di",
+      record_not_found: "Fann ikkje oppføringa",
+      title: "Profil",
+      updated: "Profilen din er oppdatert",
+      update_error: "Det oppstod ein feil. Prøv igjen",
+    },
+    validation: {
+      invalid_url: "Må vere ein gyldig URL",
+      invalid_linkedin_url: "URL-en må vere frå linkedin.com",
+    },
+  },
+} satisfies CrmMessages;

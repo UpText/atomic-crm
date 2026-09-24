@@ -443,6 +443,8 @@ export const englishCrmMessages = {
       load_more: "Load more activity",
     },
     dashboard: {
+      sqlwebapi_description:
+        "is a complete CRM system with a SQL Server backend.",
       deals_chart: "Upcoming Deal Revenue",
       deals_pipeline: "Deals Pipeline",
       latest_activity: "Latest Activity",
@@ -562,8 +564,12 @@ export const englishCrmMessages = {
           "Use this URL to connect your AI assistant to your CRM data via the Model Context Protocol (MCP).",
       },
       password: {
+        enter_new: "Enter a new password",
+        empty: "Password cannot be empty",
+        update_error: "Failed to update password",
         change: "Change password",
       },
+      password_updated: "Password updated successfully",
       password_reset_sent:
         "A reset password email has been sent to your email address",
       record_not_found: "Record not found",

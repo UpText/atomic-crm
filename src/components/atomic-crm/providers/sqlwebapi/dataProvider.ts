@@ -22,6 +22,7 @@ import type {
   SignUpData,
 } from "../../types";
 import type { ConfigurationContextValue } from "../../root/ConfigurationContext";
+import { i18nProvider } from "../commons/i18nProvider";
 import { getActivityLog } from "../commons/activity";
 import { getCompanyAvatar } from "../commons/getCompanyAvatar";
 import { getContactAvatar } from "../commons/getContactAvatar";
@@ -450,14 +451,16 @@ const dataProviderWithCustomMethods = {
       throw new Error("Password update is only available in the browser");
     }
 
-    const newPassword = window.prompt("Enter a new password");
+    const newPassword = window.prompt(
+      i18nProvider.translate("crm.profile.password.enter_new"),
+    );
     if (newPassword == null) {
       return null;
     }
 
     const normalizedPassword = newPassword.trim();
     if (!normalizedPassword) {
-      throw new Error("Password cannot be empty");
+      throw new Error(i18nProvider.translate("crm.profile.password.empty"));
     }
 
     const { data: previousData } = await baseDataProvider.getOne<Sale>(
