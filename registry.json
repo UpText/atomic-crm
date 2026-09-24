@@ -346,6 +346,30 @@
           "type": "registry:component"
         },
         {
+          "path": "src/components/atomic-crm/providers/commons/swedishMessages.ts",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/atomic-crm/providers/commons/swedishCrmMessages.ts",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/atomic-crm/providers/commons/nynorskMessages.ts",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/atomic-crm/providers/commons/nynorskCrmMessages.ts",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/atomic-crm/providers/commons/norwegianMessages.ts",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/atomic-crm/providers/commons/norwegianCrmMessages.ts",
+          "type": "registry:component"
+        },
+        {
           "path": "src/components/atomic-crm/providers/commons/mergeContacts.ts",
           "type": "registry:component"
         },
@@ -362,11 +386,27 @@
           "type": "registry:component"
         },
         {
+          "path": "src/components/atomic-crm/providers/commons/germanMessages.ts",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/atomic-crm/providers/commons/germanCrmMessages.ts",
+          "type": "registry:component"
+        },
+        {
           "path": "src/components/atomic-crm/providers/commons/frenchCrmMessages.ts",
           "type": "registry:component"
         },
         {
           "path": "src/components/atomic-crm/providers/commons/englishCrmMessages.ts",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/atomic-crm/providers/commons/danishMessages.ts",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/atomic-crm/providers/commons/danishCrmMessages.ts",
           "type": "registry:component"
         },
         {
