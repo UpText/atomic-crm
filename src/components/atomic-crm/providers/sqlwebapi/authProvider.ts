@@ -1,16 +1,11 @@
 // src/authProvider.ts
 
 import { canAccess } from "../commons/canAccess";
-import {
-  clearStoredAuth,
-  ensureValidStoredAuth,
-} from "./token";
-import {
-  getSqlWebApiService,
-  getSqlWebApiUrl,
-} from "./runtimeConfig";
+import { clearStoredAuth, ensureValidStoredAuth } from "./token";
+import { getSqlWebApiService, getSqlWebApiUrl } from "./runtimeConfig";
 
-const ensureTrailingSlash = (url: string) => (url.endsWith("/") ? url : `${url}/`);
+const ensureTrailingSlash = (url: string) =>
+  url.endsWith("/") ? url : `${url}/`;
 const USER_STORAGE_KEY = "user";
 const TENANT_STORAGE_KEY = "tenant";
 
@@ -97,9 +92,12 @@ const fetchUserByEmail = async ({
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${baseUrl}${service}/sales?${params.toString()}`, {
-    headers,
-  });
+  const response = await fetch(
+    `${baseUrl}${service}/sales?${params.toString()}`,
+    {
+      headers,
+    },
+  );
   if (!response.ok) {
     return null;
   }
@@ -136,8 +134,23 @@ export const authProvider = {
       }),
     });
     if (!res.ok) throw new Error("Invalid credentials");
-    const rawAuth = await res.json();
-    const auth = { ...rawAuth, token: pickToken(rawAuth), tenant: normalizedTenant };
+    const responseText = (await res.text()).trim();
+    let rawAuth;
+    try {
+      rawAuth = JSON.parse(responseText);
+    } catch {
+      // SQLWebAPI returns the JWT directly as plain text.
+      rawAuth = responseText;
+    }
+    const token = typeof rawAuth === "string" ? rawAuth : pickToken(rawAuth);
+    if (typeof token !== "string" || !token.trim()) {
+      throw new Error("Missing token in login response");
+    }
+    const auth = {
+      ...(typeof rawAuth === "object" && rawAuth !== null ? rawAuth : {}),
+      token: token.trim(),
+      tenant: normalizedTenant,
+    };
     localStorage.setItem("auth", JSON.stringify(auth));
     localStorage.setItem(TENANT_STORAGE_KEY, normalizedTenant);
 

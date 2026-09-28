@@ -1,6 +1,6 @@
 CREATE PROCEDURE [crmapi].[sales_Password_Put](
     @id VARCHAR(MAX),
-    @passwordHash NVARCHAR(255),
+    @passwordHash NVARCHAR(256),
     @auth_email VARCHAR(MAX),
     @auth_tenant NVARCHAR(255)
 ) AS
@@ -19,6 +19,12 @@ BEGIN
     IF @IsAdmin = 0 AND @user_id != @id
     BEGIN
         RAISERROR('Unauthorized', 16, 1);
+        RETURN 400;
+    END
+
+    IF @passwordHash IS NULL OR @passwordHash NOT LIKE N'$argon2id$v=19$%'
+    BEGIN
+        RAISERROR('An Argon2id password hash is required.', 16, 1);
         RETURN 400;
     END
 

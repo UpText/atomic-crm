@@ -10,9 +10,15 @@ CREATE PROCEDURE [crmapi].[sales_post](
     @avatar_path nvarchar(1024) = NULL,
     @avatar_type nvarchar(128) = NULL,
     @auth_tenant NVARCHAR(255) = NULL,
-    @passwordhash NVARCHAR(100) = NULL
+    @passwordhash NVARCHAR(256) = NULL
 ) AS
 BEGIN
+    IF @passwordhash IS NULL OR @passwordhash NOT LIKE N'$argon2id$v=19$%'
+    BEGIN
+        RAISERROR('An Argon2id password hash is required.', 16, 1);
+        RETURN 400;
+    END
+
     INSERT INTO crm.sales (
         tenant,
         user_id,

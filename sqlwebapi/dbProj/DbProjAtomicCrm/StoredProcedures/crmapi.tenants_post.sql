@@ -1,8 +1,7 @@
 CREATE PROCEDURE [crmapi].[tenants_post](
     @tenant NVARCHAR(255),
     @admin_email NVARCHAR(255),
-    @password NVARCHAR(100) = NULL,
-    @passwordHash NVARCHAR(100) = NULL
+    @passwordHash NVARCHAR(256)
 )
 AS
 BEGIN
@@ -11,7 +10,6 @@ BEGIN
 
     DECLARE @normalized_tenant NVARCHAR(255) = LTRIM(RTRIM(@tenant));
     DECLARE @normalized_admin_email NVARCHAR(255) = LOWER(LTRIM(RTRIM(@admin_email)));
-
 
     IF @normalized_tenant IS NULL OR @normalized_tenant = N''
     BEGIN
@@ -43,9 +41,9 @@ BEGIN
         RETURN 400;
     END
 
-    IF (@passwordHash IS NULL OR LTRIM(RTRIM(@passwordHash)) = N'')
+    IF @passwordHash IS NULL OR @passwordHash NOT LIKE N'$argon2id$v=19$%'
     BEGIN
-        RAISERROR('password is required.', 16, 1);
+        RAISERROR('An Argon2id password hash is required.', 16, 1);
         RETURN 400;
     END
 
@@ -122,4 +120,4 @@ BEGIN
     WHERE t.name = @normalized_tenant;
 
     RETURN 201;
-END
+END;
