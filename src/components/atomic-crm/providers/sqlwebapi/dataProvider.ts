@@ -6,6 +6,8 @@ import {
   withLifecycleCallbacks,
   type CreateParams,
   type DataProvider,
+  type DeleteParams,
+  type DeleteManyParams,
   type GetListParams,
   type Identifier,
   type UpdateParams,
@@ -275,6 +277,26 @@ const serializeDealContactIds = <T extends { data: { contact_ids?: unknown } }>(
 
 const dataProviderWithCustomMethods = {
   ...baseDataProvider,
+  async delete(resource: string, params: DeleteParams) {
+    const response = await baseDataProvider.delete(resource, params);
+    // SQLWebAPI can return 204 without the deleted record.
+    return {
+      ...response,
+      data: response.data ?? { ...params.previousData, id: params.id },
+    };
+  },
+  async deleteMany(resource: string, params: DeleteManyParams) {
+    const ids = await Promise.all(
+      params.ids.map(async (id) => {
+        const response = await baseDataProvider.delete(resource, {
+          id,
+          meta: params.meta,
+        });
+        return response.data?.id ?? id;
+      }),
+    );
+    return { data: ids };
+  },
   async getList(resource: string, params: GetListParams) {
     if (resource === "companies") {
       const response = await baseDataProvider.getList(
