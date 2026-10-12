@@ -4,6 +4,12 @@ CREATE PROCEDURE [crmapi].[tenants_delete](
 )
 AS
 BEGIN
+    IF @auth_tenant IS NULL OR @auth_tenant <> N'admin'
+    BEGIN
+        RAISERROR('Only admin tenant members can manage tenants.', 16, 1);
+        RETURN 403;
+    END
+
     IF NOT EXISTS (SELECT 1 FROM crm.tenants WHERE name = @ID)
     BEGIN
         RAISERROR('Unknown tenant.', 16, 1);

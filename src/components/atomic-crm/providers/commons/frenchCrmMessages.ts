@@ -316,6 +316,7 @@ export const frenchCrmMessages = {
         disabled: "Désactivé",
       },
       create: {
+        success_sqlwebapi: "Utilisateur créé avec succès.",
         error:
           "Une erreur s'est produite lors de la création de l'utilisateur.",
         success:
@@ -555,6 +556,7 @@ export const frenchCrmMessages = {
       system: "Système",
     },
     language: "Langue",
+    language_browser_default: "Langue du navigateur",
     navigation: {
       label: "Navigation CRM",
     },

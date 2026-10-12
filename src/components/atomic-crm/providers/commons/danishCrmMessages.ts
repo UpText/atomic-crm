@@ -315,6 +315,7 @@ export const danishCrmMessages = {
         disabled: "Deaktiveret",
       },
       create: {
+        success_sqlwebapi: "Brugeren er oprettet.",
         error: "Der opstod en fejl under oprettelsen af brugeren.",
         success:
           "Brugeren er oprettet og modtager snart en e-mail for at angive sin adgangskode.",
@@ -552,6 +553,7 @@ export const danishCrmMessages = {
       system: "System",
     },
     language: "Sprog",
+    language_browser_default: "Browserens sprog",
     navigation: {
       label: "CRM-navigation",
     },

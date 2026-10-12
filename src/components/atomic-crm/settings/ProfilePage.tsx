@@ -5,7 +5,6 @@ import {
   useDataProvider,
   useGetIdentity,
   useGetOne,
-  useLocaleState,
   useLocales,
   useNotify,
   useRecordContext,
@@ -32,6 +31,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+import { useProfileLanguage } from "./useProfileLanguage";
 import ImageEditorField from "../misc/ImageEditorField";
 import { hasSqlWebApiUrl } from "../providers/sqlwebapi/runtimeConfig";
 import type { CrmDataProvider } from "../providers/types";
@@ -83,7 +83,8 @@ export const ProfilePage = () => {
   if (!data) return <Loading />;
 
   const handleOnSubmit = async (values: any) => {
-    mutate(values);
+    const { language: _language, ...profile } = values;
+    mutate(profile);
   };
 
   return (
@@ -183,7 +184,8 @@ const ProfileForm = ({
   };
 
   const handleAvatarUpdate = async (values: any) => {
-    mutateSale(values);
+    const { language: _language, ...profile } = values;
+    mutateSale(profile);
   };
 
   return (
@@ -291,7 +293,7 @@ const ProfileForm = ({
 const LanguageSelector = () => {
   const translate = useTranslate();
   const locales = useLocales();
-  const [locale, setLocale] = useLocaleState();
+  const { locale, setLocale, isPending } = useProfileLanguage();
 
   if (locales.length <= 1) {
     return null;
@@ -302,7 +304,7 @@ const LanguageSelector = () => {
       <p className="text-xs text-muted-foreground">
         {translate("crm.language")}
       </p>
-      <Select value={locale} onValueChange={setLocale}>
+      <Select value={locale} onValueChange={setLocale} disabled={isPending}>
         <SelectTrigger className="w-full">
           <SelectValue />
         </SelectTrigger>

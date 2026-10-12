@@ -6,8 +6,12 @@ import {
   useGetIdentity,
 } from "ra-core";
 
+import type { ConfigurationContextValue } from "../root/ConfigurationContext";
 import type { CrmDataProvider } from "../providers/types";
-import { defaultCompanySectors } from "../root/defaultConfiguration";
+import {
+  defaultCompanySectors,
+  defaultConfiguration,
+} from "../root/defaultConfiguration";
 import type {
   Company,
   Contact,
@@ -40,11 +44,14 @@ type ExportFromJsonState =
 type ExportFromJsonFunction = () => Promise<void>;
 
 type ExportSchema = {
+  format_version: 2;
+  configuration: ConfigurationContextValue;
   sales: Array<{
     id: number;
     email: string;
     first_name: string;
     last_name: string;
+    avatar?: string;
   }>;
   companies: Array<{
     id: number;
@@ -52,7 +59,6 @@ type ExportSchema = {
     sales_id?: number;
     logo_src?: string;
     logo_title?: string;
-    logo_path?: string;
     logo_type?: string;
     description?: string;
     city?: string;
@@ -78,6 +84,7 @@ type ExportSchema = {
     last_name: string;
     title?: string;
     background?: string;
+    avatar?: string;
     linkedin_url?: string | null;
     gender?: string;
     has_newsletter?: boolean;
@@ -156,13 +163,15 @@ export const embedFileSrcForExport = async (
   try {
     const response = await fetch(src);
     if (!response.ok) {
-      return src;
+      throw new Error(`HTTP ${response.status}`);
     }
 
     const blob = await response.blob();
     return await readBlobAsDataUrl(blob);
-  } catch {
-    return src;
+  } catch (error) {
+    throw new Error(`Export incomplete: unable to download file ${src}`, {
+      cause: error,
+    });
   }
 };
 
@@ -197,7 +206,7 @@ export const useExportToJson = (): [
         dealNotes,
         tasks,
         tags,
-        configuration,
+        storedConfiguration,
       ] = await Promise.all([
         getAllRecords<Sale>(dataProvider, "sales"),
         getAllRecords<Company>(dataProvider, "companies"),
@@ -207,8 +216,10 @@ export const useExportToJson = (): [
         getAllRecords<DealNote>(dataProvider, "deal_notes"),
         getAllRecords<Task>(dataProvider, "tasks"),
         getAllRecords<Tag>(dataProvider, "tags"),
-        dataProvider.getConfiguration().catch(() => undefined),
+        dataProvider.getConfiguration(),
       ]);
+
+      const configuration = { ...defaultConfiguration, ...storedConfiguration };
 
       const salesIdMap = createIdMap(sales);
       const companyIdMap = createIdMap(companies);
@@ -226,8 +237,46 @@ export const useExportToJson = (): [
         companies.map((company) => embedFileSrcForExport(company.logo?.src)),
       );
 
+      const exportedSalesAvatars = await Promise.all(
+        sales.map((sale) => embedFileSrcForExport(getAvatarSrc(sale))),
+      );
+      const exportedContactAvatars = await Promise.all(
+        contacts.map((contact) => embedFileSrcForExport(getAvatarSrc(contact))),
+      );
+      const contactAttachments = new Map(
+        await Promise.all(
+          contactNotes.map(
+            async (note) =>
+              [
+                note.id,
+                await getNoteAttachmentsForExport(note.attachments),
+              ] as const,
+          ),
+        ),
+      );
+      const dealAttachments = new Map(
+        await Promise.all(
+          dealNotes.map(
+            async (note) =>
+              [
+                note.id,
+                await getNoteAttachmentsForExport(note.attachments),
+              ] as const,
+          ),
+        ),
+      );
+
       const payload: ExportSchema = {
-        sales: sales.map((sale) => ({
+        format_version: 2,
+        configuration: {
+          ...configuration,
+          lightModeLogo:
+            (await embedFileSrcForExport(configuration.lightModeLogo)) ?? "",
+          darkModeLogo:
+            (await embedFileSrcForExport(configuration.darkModeLogo)) ?? "",
+        },
+        sales: sales.map((sale, index) => ({
+          avatar: exportedSalesAvatars[index],
           id: salesIdMap.get(sale.id)!,
           email: sale.email,
           first_name: sale.first_name,
@@ -242,7 +291,6 @@ export const useExportToJson = (): [
               : undefined,
           logo_src: exportedCompanyLogos[index],
           logo_title: company.logo?.title || undefined,
-          logo_path: company.logo?.path || undefined,
           logo_type: company.logo?.type || undefined,
           description: company.description || undefined,
           city: company.city || undefined,
@@ -262,7 +310,8 @@ export const useExportToJson = (): [
             : undefined,
           created_at: company.created_at || undefined,
         })),
-        contacts: contacts.map((contact) => ({
+        contacts: contacts.map((contact, index) => ({
+          avatar: exportedContactAvatars[index],
           id: contactIdMap.get(contact.id)!,
           sales_id:
             contact.sales_id != null
@@ -346,7 +395,7 @@ export const useExportToJson = (): [
             text: note.text,
             date: note.date,
             status: note.status || undefined,
-            attachments: getNoteAttachmentsForExport(note.attachments),
+            attachments: contactAttachments.get(note.id),
           })),
         deal_notes: dealNotes
           .map((note) => ({
@@ -372,7 +421,7 @@ export const useExportToJson = (): [
             sales_id: salesId,
             text: note.text,
             date: note.date,
-            attachments: getNoteAttachmentsForExport(note.attachments),
+            attachments: dealAttachments.get(note.id),
           })),
         tasks: tasks
           .map((task) => ({
@@ -400,6 +449,21 @@ export const useExportToJson = (): [
           })),
       };
 
+      // A migration must never silently drop records with broken relationships.
+      if (
+        payload.deals.length !== deals.length ||
+        payload.notes.length !== contactNotes.length ||
+        payload.deal_notes.length !== dealNotes.length ||
+        payload.tasks.length !== tasks.length ||
+        contacts.some(
+          (contact) =>
+            contact.company_id != null && !companyIdMap.has(contact.company_id),
+        )
+      ) {
+        throw new Error(
+          "Export incomplete: some records reference missing companies, contacts, deals, or sales. Repair these relationships before exporting.",
+        );
+      }
       downloadJson(payload, "uptextcrm-export.json");
 
       setState({
@@ -471,17 +535,22 @@ export const getSalesIdForExport = (
   return fallbackSalesId;
 };
 
-export const getNoteAttachmentsForExport = (
+export const getNoteAttachmentsForExport = async (
   attachments?: Array<{ src?: string; title?: string; path?: string }> | null,
 ) => {
-  const exportedAttachments = attachments
-    ?.filter((attachment) => !!attachment.src)
-    .map((attachment) => ({
-      url: attachment.src!,
-      name: attachment.title || attachment.path || "attachment",
-    }));
-
-  return exportedAttachments?.length ? exportedAttachments : undefined;
+  if (!attachments?.length) return undefined;
+  return Promise.all(
+    attachments.map(async (attachment) => {
+      if (!attachment.src)
+        throw new Error(
+          `Export incomplete: attachment ${attachment.title || attachment.path || "attachment"} has no source`,
+        );
+      return {
+        url: (await embedFileSrcForExport(attachment.src))!,
+        name: attachment.title || attachment.path || "attachment",
+      };
+    }),
+  );
 };
 
 const downloadJson = (data: ExportSchema, filename: string) => {
@@ -511,3 +580,6 @@ const normalizeSector = (
 
   return sector.toLowerCase().replace(/\s+/g, "-");
 };
+
+const getAvatarSrc = (record: { avatar?: { src?: string } }) =>
+  record.avatar?.src ?? (record as { avatar_src?: string }).avatar_src;

@@ -7,6 +7,7 @@ import {
   type ResourceCallbacks,
 } from "ra-core";
 import type {
+  Contact,
   ContactNote,
   Deal,
   DealNote,
@@ -302,6 +303,12 @@ const lifeCycleCallbacks: ResourceCallbacks[] = [
   },
   {
     resource: "contacts",
+    beforeSave: async (data: Contact) => {
+      if (data.avatar?.rawFile instanceof File) {
+        data.avatar = await uploadToBucket(data.avatar as RAFile);
+      }
+      return data;
+    },
     beforeGetList: async (params) => {
       return applyFullTextSearch([
         "first_name",

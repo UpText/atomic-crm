@@ -27,7 +27,6 @@ import {
   useDataProvider,
   useGetIdentity,
   useGetOne,
-  useLocaleState,
   useLocales,
   useLogout,
   useNotify,
@@ -44,6 +43,7 @@ import {
 import { MobileContent } from "../layout/MobileContent";
 import MobileHeader from "../layout/MobileHeader";
 import { ChangelogPage } from "../misc/ChangelogPage";
+import { useProfileLanguage } from "./useProfileLanguage";
 import ImageEditorField from "../misc/ImageEditorField";
 import { hasSqlWebApiUrl } from "../providers/sqlwebapi/runtimeConfig";
 import type { CrmDataProvider } from "../providers/types";
@@ -168,10 +168,11 @@ const ProfileSection = () => {
       );
 
       try {
+        const { language: _language, ...profile } = data;
         await dataProvider.salesUpdate(identity.id, {
-          ...data,
+          ...profile,
           [field]: value,
-        } as SalesFormData);
+        });
         refetchIdentity();
         refetchUser();
         notify("crm.profile.updated", {
@@ -200,7 +201,8 @@ const ProfileSection = () => {
     async (values: SalesFormData) => {
       if (!data) return;
       try {
-        await dataProvider.salesUpdate(data.id, values);
+        const { language: _language, ...profile } = values;
+        await dataProvider.salesUpdate(data.id, profile);
         refetchIdentity();
         refetchUser();
         notify("crm.profile.updated", {
@@ -375,7 +377,7 @@ const PreferencesSection = () => {
 const LanguageRow = () => {
   const translate = useTranslate();
   const locales = useLocales();
-  const [locale, setLocale] = useLocaleState();
+  const { locale, setLocale, isPending } = useProfileLanguage();
 
   if (locales.length <= 1) return null;
 
@@ -387,7 +389,7 @@ const LanguageRow = () => {
         </ItemTitle>
       </ItemContent>
       <ItemActions>
-        <Select value={locale} onValueChange={setLocale}>
+        <Select value={locale} onValueChange={setLocale} disabled={isPending}>
           <SelectTrigger
             size="sm"
             className="w-auto !h-auto py-0 border-none shadow-none"

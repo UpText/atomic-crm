@@ -1,6 +1,7 @@
 CREATE TABLE [crm].[sales] (
     [id] [int] IDENTITY(1,1) NOT NULL,
     [tenant] [nvarchar](255) NOT NULL CONSTRAINT [DF_sales_tenant] DEFAULT ('default'),
+    [language] [nvarchar](10) NULL,
     [user_id] [varchar](50) NULL,
     [email] [nvarchar](320) NULL,
     [first_name] [nvarchar](100) NULL,

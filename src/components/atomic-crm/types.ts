@@ -17,6 +17,7 @@ export type SignUpData = {
 };
 
 export type SalesFormData = {
+  language?: string | null;
   avatar?: string;
   email: string;
   password?: string;
@@ -27,6 +28,7 @@ export type SalesFormData = {
 };
 
 export type Sale = {
+  language?: string | null;
   first_name: string;
   last_name: string;
   administrator: boolean;

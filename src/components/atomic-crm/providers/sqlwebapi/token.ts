@@ -3,6 +3,7 @@ const USER_STORAGE_KEY = "user";
 
 type JwtPayload = {
   exp?: number;
+  tenant?: string;
 };
 
 const decodeBase64Url = (value: string) => {
@@ -67,4 +68,10 @@ export const ensureValidStoredAuth = () => {
   }
 
   return auth;
+};
+
+// For UI access checks; the API must validate the token and enforce authorization.
+export const getAuthenticatedTenant = () => {
+  const auth = ensureValidStoredAuth();
+  return auth ? parseJwtPayload(auth.token)?.tenant : undefined;
 };

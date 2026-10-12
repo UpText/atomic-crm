@@ -166,3 +166,29 @@ Once you launch the import, the page will show the progress of the import, and d
 ![Import progress](../../images/import-data-progress.png)
 
 This migration tool will allow you to easily migrate from your previous CRM to Atomic CRM, and start using it in a few clicks.
+
+## Moving to another UpTextCRM installation
+
+Use the user menu's JSON export on the source installation, then sign in to an
+empty tenant on the destination installation and import that file. Use a current
+version of UpTextCRM on both installations.
+
+New exports include CRM settings, company logos, contact and salesperson avatars,
+and the contents of contact-note and deal-note attachments. Import creates new
+file references on the destination and remaps record relationships. It does not
+copy the source tenant identity, passwords, or administrator privileges. Existing
+salespeople are matched by email; other records in a portable export are created
+anew, including contacts with identical names. Repeating an import can therefore
+create duplicates. CRM settings in the export replace destination settings.
+
+On SQLWebAPI, newly imported salespeople receive random passwords. Reset their
+passwords before they sign in; existing accounts keep their current passwords.
+
+Export fails if a referenced file cannot be retrieved, rather than producing a
+migration file that depends on the source installation. Review import errors and
+counts before deleting the original tenant. Import is not transactional: records
+created before a failure remain in the destination tenant.
+
+Older JSON files remain importable, but attachments represented only by URLs still
+depend on their original installation. Create a fresh export to migrate files.
+Unreferenced storage objects are not included.

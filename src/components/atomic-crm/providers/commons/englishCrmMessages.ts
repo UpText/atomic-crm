@@ -311,6 +311,7 @@ export const englishCrmMessages = {
         disabled: "Disabled",
       },
       create: {
+        success_sqlwebapi: "User created successfully.",
         error: "An error occurred while creating the user.",
         success:
           "User created. They will soon receive an email to set their password.",
@@ -549,6 +550,7 @@ export const englishCrmMessages = {
       system: "System",
     },
     language: "Language",
+    language_browser_default: "Browser default",
     navigation: {
       label: "CRM navigation",
     },

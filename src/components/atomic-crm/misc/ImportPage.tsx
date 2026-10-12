@@ -90,6 +90,13 @@ const ImportFromJsonIdle = ({
         </a>
       </p>
     </div>
+    <p className="text-sm mb-4">
+      To move installations, import a new JSON export into an empty tenant.
+      Portable exports include files and CRM settings. Import restores those
+      settings and creates new records; repeating an import can create
+      duplicates. Older exports may contain links to files on the original
+      installation.
+    </p>
     <ImportFromJsonForm importFile={importFile} translate={translate} />
   </>
 );
@@ -113,8 +120,20 @@ const ImportFromJsonError = ({
       </AlertTitle>
       <AlertDescription>
         <p>{importState.error.message}</p>
+        <p>
+          {translate("crm.import.error.partial", {
+            _: "Records already imported remain saved. Review the results before retrying to avoid duplicates.",
+          })}
+        </p>
       </AlertDescription>
     </Alert>
+    <ImportStats importState={importState} translate={translate} />
+    {hasFailedImports(importState.failedImports) ? (
+      <DownloadErrorFileButton
+        failedImports={importState.failedImports}
+        translate={translate}
+      />
+    ) : null}
     <ImportFromJsonForm importFile={importFile} translate={translate} />
   </>
 );
@@ -208,6 +227,7 @@ const hasFailedImports = (failedImports: ImportFromJsonFailures) => {
     failedImports.contacts.length > 0 ||
     failedImports.deals.length > 0 ||
     failedImports.notes.length > 0 ||
+    failedImports.deal_notes.length > 0 ||
     failedImports.tasks.length > 0
   );
 };
@@ -269,6 +289,11 @@ const ImportStats = ({
       entity: "notes",
       imported: stats.notes,
       failed: failedImports.notes.length,
+    },
+    {
+      entity: "deal notes",
+      imported: stats.deal_notes,
+      failed: failedImports.deal_notes.length,
     },
     {
       entity: "tasks",

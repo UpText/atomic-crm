@@ -166,6 +166,10 @@
           "type": "registry:component"
         },
         {
+          "path": "src/components/atomic-crm/settings/useProfileLanguage.ts",
+          "type": "registry:component"
+        },
+        {
           "path": "src/components/atomic-crm/settings/SettingsPageMobile.tsx",
           "type": "registry:component"
         },
@@ -354,6 +358,10 @@
           "type": "registry:component"
         },
         {
+          "path": "src/components/atomic-crm/providers/commons/profileLanguage.ts",
+          "type": "registry:component"
+        },
+        {
           "path": "src/components/atomic-crm/providers/commons/nynorskMessages.ts",
           "type": "registry:component"
         },
@@ -503,6 +511,10 @@
         },
         {
           "path": "src/components/atomic-crm/misc/unsupportedDomains.const.ts",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/atomic-crm/misc/portableFiles.ts",
           "type": "registry:component"
         },
         {

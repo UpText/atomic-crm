@@ -12,16 +12,17 @@ BEGIN
     DECLARE @bin VARBINARY(MAX);
     SET @bin = CAST(N'' AS XML).value('xs:base64Binary(sql:variable("@data"))', 'VARBINARY(MAX)');
 
-    IF NOT EXISTS (
+    -- Parallel first uploads must serialize creation of the same tenant bucket.
+    -- Keep the existence check and insert in one statement so the key-range
+    -- lock is held until the insert commits, including in autocommit mode.
+    INSERT INTO crm.buckets (tenant, bucket_id, is_public)
+    SELECT @auth_tenant, @bucket_id, 0
+    WHERE NOT EXISTS (
         SELECT 1
-        FROM crm.buckets
+        FROM crm.buckets WITH (UPDLOCK, HOLDLOCK)
         WHERE tenant = @auth_tenant
           AND bucket_id = @bucket_id
-    )
-    BEGIN
-        INSERT INTO crm.buckets (tenant, bucket_id, is_public)
-        VALUES (@auth_tenant, @bucket_id, 0);
-    END
+    );
 
     DECLARE @bytes_length BIGINT = DATALENGTH(@bin);
 

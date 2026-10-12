@@ -9,6 +9,12 @@ CREATE PROCEDURE [crmapi].[tenants_get](
 )
 AS
 BEGIN
+    IF @auth_tenant IS NULL OR @auth_tenant <> N'admin'
+    BEGIN
+        RAISERROR('Only admin tenant members can manage tenants.', 16, 1);
+        RETURN 403;
+    END
+
     DECLARE @search NVARCHAR(200) = TRY_CONVERT(NVARCHAR(200), JSON_VALUE(@filter, '$.q'));
 
     SELECT

@@ -314,6 +314,7 @@ export const swedishCrmMessages = {
         disabled: "Inaktiverad",
       },
       create: {
+        success_sqlwebapi: "Användaren har skapats.",
         error: "Ett fel uppstod när användaren skapades.",
         success:
           "Användaren har skapats och får snart ett e-postmeddelande för att ange sitt lösenord.",
@@ -552,6 +553,7 @@ export const swedishCrmMessages = {
       system: "System",
     },
     language: "Språk",
+    language_browser_default: "Webbläsarens språk",
     navigation: {
       label: "CRM-navigering",
     },

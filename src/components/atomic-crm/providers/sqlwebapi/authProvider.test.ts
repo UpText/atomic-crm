@@ -72,3 +72,50 @@ describe("SQLWebAPI login", () => {
     expect(localStorage.getItem("auth")).toBeNull();
   });
 });
+
+describe("SQLWebAPI tenant access", () => {
+  afterEach(() => localStorage.clear());
+
+  it.each([
+    ["admin", false, true],
+    ["admin", true, true],
+    ["example", true, false],
+    ["example", false, false],
+    [undefined, true, false],
+  ])(
+    "checks tenant %s with administrator=%s",
+    async (tenant, administrator, allowed) => {
+      const token = `header.${btoa(JSON.stringify({ exp: 4102444800, tenant }))}.signature`;
+      localStorage.setItem("auth", JSON.stringify({ token, tenant: "admin" }));
+      localStorage.setItem("tenant", "admin");
+      localStorage.setItem(
+        "user",
+        JSON.stringify({ administrator, tenant: "admin" }),
+      );
+
+      for (const action of ["list", "show", "create", "edit", "delete"]) {
+        await expect(
+          authProvider.canAccess({ resource: "tenants", action }),
+        ).resolves.toBe(allowed);
+      }
+      await expect(
+        authProvider.canAccess({ resource: "sales", action: "list" }),
+      ).resolves.toBe(administrator);
+    },
+  );
+
+  it("rejects an expired admin tenant session", async () => {
+    const token = `header.${btoa(JSON.stringify({ exp: 1, tenant: "admin" }))}.signature`;
+    localStorage.setItem("auth", JSON.stringify({ token }));
+    await expect(
+      authProvider.canAccess({ resource: "tenants", action: "list" }),
+    ).resolves.toBe(false);
+  });
+
+  it("rejects a missing session", async () => {
+    localStorage.clear();
+    await expect(
+      authProvider.canAccess({ resource: "tenants", action: "list" }),
+    ).resolves.toBe(false);
+  });
+});

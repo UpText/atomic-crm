@@ -14,6 +14,7 @@ BEGIN
         id,
         user_id,
         email,
+        language,
         first_name,
         last_name,
         administrator,

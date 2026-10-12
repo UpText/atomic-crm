@@ -29,11 +29,18 @@ export function SalesCreate() {
       return dataProvider.salesCreate(data);
     },
     onSuccess: () => {
-      notify("resources.sales.create.success", {
-        messageArgs: {
-          _: "User created. They will soon receive an email to set their password.",
+      notify(
+        isSqlWebApi
+          ? "resources.sales.create.success_sqlwebapi"
+          : "resources.sales.create.success",
+        {
+          messageArgs: {
+            _: isSqlWebApi
+              ? "User created successfully."
+              : "User created. They will soon receive an email to set their password.",
+          },
         },
-      });
+      );
       redirect("/sales");
     },
     onError: (error) => {

@@ -1,5 +1,6 @@
 CREATE PROCEDURE [crmapi].[sales_put](
     @ID varchar(max),
+    @language nvarchar(10) = NULL,
     @email nvarchar(320) = NULL,
     @first_name nvarchar(100) = NULL,
     @last_name nvarchar(100) = NULL,
@@ -30,6 +31,7 @@ BEGIN
 
     UPDATE crm.sales
     SET email = COALESCE(@email, email),
+        language = CASE WHEN @language IS NULL THEN language ELSE NULLIF(@language, N'') END,
         first_name = COALESCE(@first_name, first_name),
         last_name = COALESCE(@last_name, last_name),
         administrator = COALESCE(@administrator, administrator),

@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import {
+  CanAccess,
   useDataProvider,
   useEditController,
   useNotify,
@@ -30,6 +31,14 @@ function EditToolbar() {
 }
 
 export function TenantEdit() {
+  return (
+    <CanAccess resource="tenants" action="edit">
+      <TenantEditContent />
+    </CanAccess>
+  );
+}
+
+function TenantEditContent() {
   const { record } = useEditController<Tenant>();
   const dataProvider = useDataProvider<CrmDataProvider>();
   const notify = useNotify();
@@ -66,17 +75,17 @@ export function TenantEdit() {
 
   return (
     <div className="max-w-lg w-full mx-auto mt-8">
-        <Card>
-          <CardContent>
-            <SimpleForm
-              toolbar={<EditToolbar />}
-              onSubmit={onSubmit as SubmitHandler<any>}
-              record={record}
-            >
-              <TenantInputs />
-            </SimpleForm>
-          </CardContent>
-        </Card>
+      <Card>
+        <CardContent>
+          <SimpleForm
+            toolbar={<EditToolbar />}
+            onSubmit={onSubmit as SubmitHandler<any>}
+            record={record}
+          >
+            <TenantInputs />
+          </SimpleForm>
+        </CardContent>
+      </Card>
     </div>
   );
 }

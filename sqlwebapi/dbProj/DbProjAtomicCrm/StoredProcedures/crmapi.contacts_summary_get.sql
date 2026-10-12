@@ -39,6 +39,7 @@ BEGIN
         background,
         emails_json AS email_jsonb,
         phones_json AS phone_jsonb,
+        avatar_src,
         avatar_title,
         avatar_path,
         avatar_type,

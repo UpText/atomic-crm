@@ -1,4 +1,5 @@
 CREATE PROCEDURE [crmapi].[sales_post](
+    @language nvarchar(10) = NULL,
     @user_id varchar(50) = NULL,
     @email nvarchar(320) = NULL,
     @first_name nvarchar(100) = NULL,
@@ -20,6 +21,7 @@ BEGIN
     END
 
     INSERT INTO crm.sales (
+        language,
         tenant,
         user_id,
         email,
@@ -34,6 +36,7 @@ BEGIN
         PasswordHash
     )
     VALUES (
+        NULLIF(@language, N''),
         @auth_tenant,
         @user_id,
         @email,

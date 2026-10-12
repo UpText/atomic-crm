@@ -9,7 +9,10 @@ CREATE PROCEDURE [crmapi].[deals_post](
     @sales_id int = NULL,
     @index int = NULL,
     @contact_ids nvarchar(max) = NULL,
-    @auth_tenant NVARCHAR(255) = NULL
+    @auth_tenant NVARCHAR(255) = NULL,
+    @created_at datetime2 = NULL,
+    @updated_at datetime2 = NULL,
+    @archived_at datetime2 = NULL
 ) AS
 BEGIN
     IF @sales_id IS NULL OR @sales_id = 0
@@ -43,9 +46,9 @@ BEGIN
         @stage,
         COALESCE(@description, N''),
         @amount,
-        GETDATE(),
-        GETDATE(),
-        NULL,
+        COALESCE(@created_at, GETDATE()),
+        COALESCE(@updated_at, @created_at, GETDATE()),
+        @archived_at,
         @expected_closing_date,
         @sales_id,
         @index

@@ -319,6 +319,7 @@ export const germanCrmMessages = {
         disabled: "Deaktiviert",
       },
       create: {
+        success_sqlwebapi: "Benutzer erfolgreich erstellt.",
         error: "Beim Erstellen des Benutzers ist ein Fehler aufgetreten.",
         success:
           "Benutzer erstellt. Er erhält in Kürze eine E-Mail zum Festlegen seines Passworts.",
@@ -560,6 +561,7 @@ export const germanCrmMessages = {
       system: "System",
     },
     language: "Sprache",
+    language_browser_default: "Browsersprache",
     navigation: {
       label: "CRM-Navigation",
     },

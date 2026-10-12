@@ -315,6 +315,7 @@ export const nynorskCrmMessages = {
         disabled: "Deaktivert",
       },
       create: {
+        success_sqlwebapi: "Brukaren er oppretta.",
         error: "Det oppstod ein feil ved oppretting av brukaren.",
         success:
           "Brukaren er oppretta og får snart ein e-post for å velje passord.",
@@ -551,6 +552,7 @@ export const nynorskCrmMessages = {
       system: "System",
     },
     language: "Språk",
+    language_browser_default: "Språket til nettlesaren",
     navigation: {
       label: "CRM-navigasjon",
     },

@@ -36,6 +36,7 @@ import {
   resolveSqlWebApiAttachmentUrl,
 } from "./runtimeConfig";
 import { ensureValidStoredAuth } from "./token";
+import { isImportedFile } from "../../misc/portableFiles";
 
 export const httpClient = async (
   url: string,
@@ -99,13 +100,40 @@ async function getIsInitialized() {
   return isInitialized;
 }
 
+// The POST and PUT procedures currently use different parameter names.
+// Both accept JSON text, while react-admin keeps these fields as arrays.
+const serializeContactFields = (
+  params: any,
+  operation: "create" | "update",
+) => {
+  const { email_jsonb, phone_jsonb, ...data } = params.data;
+  return {
+    ...params,
+    data: {
+      ...data,
+      [operation === "create" ? "emails_jsonb" : "email_jsonb"]: Array.isArray(
+        email_jsonb,
+      )
+        ? JSON.stringify(email_jsonb)
+        : email_jsonb,
+      [operation === "create" ? "phones_jsonb" : "phone_jsonb"]: Array.isArray(
+        phone_jsonb,
+      )
+        ? JSON.stringify(phone_jsonb)
+        : phone_jsonb,
+    },
+  };
+};
+
 const processCompanyLogo = async (params: any) => {
   let logo = params.data.logo;
 
   if (typeof logo !== "object" || logo === null || !logo.src) {
     logo = await getCompanyAvatar(params.data);
   } else if (logo.rawFile instanceof File || logo.src.startsWith("data:")) {
-    logo = await uploadToBucket(logo, { trimImageWhitespace: true });
+    logo = await uploadToBucket(logo, {
+      trimImageWhitespace: !isImportedFile(logo.rawFile),
+    });
   }
 
   return {
@@ -166,6 +194,21 @@ async function processContactAvatar(
   params: CreateParams<Contact> | UpdateParams<Contact>,
 ): Promise<CreateParams<Contact> | UpdateParams<Contact>> {
   const { data } = params;
+  if (
+    data.avatar?.rawFile instanceof File ||
+    data.avatar?.src?.startsWith("data:")
+  ) {
+    const avatar = await uploadToBucket(data.avatar as RAFile);
+    const uploadedData = {
+      ...data,
+      avatar,
+      avatar_src: avatar.src,
+      avatar_title: avatar.title,
+      avatar_path: avatar.path,
+      avatar_type: avatar.type,
+    };
+    return { ...params, data: uploadedData };
+  }
   if (data.avatar?.src || !data.email_jsonb || !data.email_jsonb.length) {
     return params;
   }
@@ -366,7 +409,11 @@ const dataProviderWithCustomMethods = {
   async create(resource: string, params: any) {
     const response = await baseDataProvider.create(
       resource,
-      resource === "deals" ? serializeDealContactIds(params) : params,
+      resource === "deals"
+        ? serializeDealContactIds(params)
+        : resource === "contacts"
+          ? serializeContactFields(params, "create")
+          : params,
     );
 
     if (resource === "companies") {
@@ -395,7 +442,11 @@ const dataProviderWithCustomMethods = {
   async update(resource: string, params: any) {
     const response = await baseDataProvider.update(
       resource,
-      resource === "deals" ? serializeDealContactIds(params) : params,
+      resource === "deals"
+        ? serializeDealContactIds(params)
+        : resource === "contacts"
+          ? serializeContactFields(params, "update")
+          : params,
     );
 
     if (resource === "companies") {
@@ -446,8 +497,15 @@ const dataProviderWithCustomMethods = {
     };
   },
   async salesCreate(body: SalesFormData) {
-    const data = await baseDataProvider.create("sales", {
-      data: await processSaleAvatar(body),
+    // Exports omit credentials. Supply an unguessable password for imported
+    // accounts; SQLWebAPI hashes it before calling sales_post.
+    const password =
+      body.password ||
+      `Aa1!${Array.from(crypto.getRandomValues(new Uint8Array(32)), (byte) =>
+        byte.toString(16).padStart(2, "0"),
+      ).join("")}`;
+    const { data } = await baseDataProvider.create<Sale>("sales", {
+      data: await processSaleAvatar({ ...body, password }),
     });
     return data;
   },

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   embedFileSrcForExport,
@@ -6,6 +6,8 @@ import {
   getNoteAttachmentsForExport,
   getSalesIdForExport,
 } from "./useExportToJson";
+
+afterEach(() => vi.unstubAllGlobals());
 
 describe("embedFileSrcForExport", () => {
   it("returns data urls unchanged", async () => {
@@ -28,14 +30,16 @@ describe("embedFileSrcForExport", () => {
     ).resolves.toBe("data:image/png;base64,bG9nby1ieXRlcw==");
   });
 
-  it("falls back to the original src when fetching fails", async () => {
+  it("rejects an incomplete export when fetching fails", async () => {
     const src = "https://example.com/logo.png";
     vi.stubGlobal(
       "fetch",
       vi.fn().mockRejectedValue(new Error("network error")),
     );
 
-    await expect(embedFileSrcForExport(src)).resolves.toBe(src);
+    await expect(embedFileSrcForExport(src)).rejects.toThrow(
+      "Export incomplete",
+    );
   });
 });
 
@@ -63,20 +67,37 @@ describe("getSalesIdForExport", () => {
 });
 
 describe("getNoteAttachmentsForExport", () => {
-  it("exports note attachment urls and names", () => {
-    expect(
+  it("embeds attachment bytes and preserves names", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response("proposal", {
+            headers: { "Content-Type": "application/pdf" },
+          }),
+        ),
+    );
+    await expect(
       getNoteAttachmentsForExport([
-        { src: "https://example.com/a.pdf", title: "Proposal.pdf" },
+        { src: "https://source.example/a.pdf", title: "Proposal.pdf" },
       ]),
-    ).toEqual([{ url: "https://example.com/a.pdf", name: "Proposal.pdf" }]);
+    ).resolves.toEqual([
+      { url: "data:application/pdf;base64,cHJvcG9zYWw=", name: "Proposal.pdf" },
+    ]);
   });
-
-  it("drops attachments without src and falls back to path for the name", () => {
-    expect(
-      getNoteAttachmentsForExport([
-        { title: "Missing source" },
-        { src: "https://example.com/b.pdf", path: "uploads/b.pdf" },
-      ]),
-    ).toEqual([{ url: "https://example.com/b.pdf", name: "uploads/b.pdf" }]);
+  it("rejects attachments without a source", async () => {
+    await expect(
+      getNoteAttachmentsForExport([{ title: "Missing.pdf" }]),
+    ).rejects.toThrow("Missing.pdf");
+  });
+  it("rejects HTTP errors", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(new Response(null, { status: 404 })),
+    );
+    await expect(
+      embedFileSrcForExport("https://source.example/missing"),
+    ).rejects.toThrow("Export incomplete");
   });
 });

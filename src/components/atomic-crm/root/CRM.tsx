@@ -62,6 +62,8 @@ import { CompanyShow } from "../companies/CompanyShow.tsx";
 import { NoteShowPage } from "../notes/NoteShowPage.tsx";
 import { hasSqlWebApiUrl } from "../providers/sqlwebapi/runtimeConfig";
 
+import { withProfileLanguage } from "../providers/commons/profileLanguage";
+
 const defaultStore = localStorageStore(undefined, "CRM");
 
 export type CRMProps = {
@@ -172,11 +174,14 @@ export const CRM = ({
 
   // on login, pre-fetch the configuration to avoid a flickering
   // when accessing the app for the first time
-  const wrappedAuthProvider = useMemo<AuthProvider>(
-    () => ({
-      ...authProvider,
+  const wrappedAuthProvider = useMemo<AuthProvider>(() => {
+    const profileAuthProvider = hasSqlWebApiUrl()
+      ? withProfileLanguage(authProvider, dataProvider, i18nProvider, store)
+      : authProvider;
+    return {
+      ...profileAuthProvider,
       login: async (params: any) => {
-        const result = await authProvider.login(params);
+        const result = await profileAuthProvider.login(params);
         try {
           const config = await dataProvider.getConfiguration();
           if (Object.keys(config).length > 0) {
@@ -193,7 +198,7 @@ export const CRM = ({
             "handleCallback is not implemented in the authProvider",
           );
         }
-        const result = await authProvider.handleCallback(params);
+        const result = await profileAuthProvider.handleCallback!(params);
         try {
           const config = await dataProvider.getConfiguration();
           if (Object.keys(config).length > 0) {
@@ -205,11 +210,10 @@ export const CRM = ({
         return result;
       },
       logout: async (params: any) => {
-        return authProvider.logout(params);
+        return profileAuthProvider.logout(params);
       },
-    }),
-    [authProvider, dataProvider, store],
-  );
+    };
+  }, [authProvider, dataProvider, i18nProvider, store]);
 
   const ResponsiveAdmin = isMobile ? MobileAdmin : DesktopAdmin;
 

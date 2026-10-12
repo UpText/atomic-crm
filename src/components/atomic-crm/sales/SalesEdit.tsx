@@ -2,6 +2,8 @@ import { useMutation } from "@tanstack/react-query";
 import {
   useDataProvider,
   useEditController,
+  useGetIdentity,
+  useLocaleState,
   useNotify,
   useRecordContext,
   useRedirect,
@@ -15,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 import { hasSqlWebApiUrl } from "../providers/sqlwebapi/runtimeConfig";
+import { getInitialLocale } from "../providers/commons/i18nProvider";
 import type { CrmDataProvider } from "../providers/types";
 import type { Sale, SalesFormData } from "../types";
 import { SalesInputs } from "./SalesInputs";
@@ -50,6 +53,8 @@ function EditToolbar({
 export function SalesEdit() {
   const { record } = useEditController();
   const isSqlWebApi = hasSqlWebApiUrl();
+  const { identity } = useGetIdentity();
+  const [, setLocale] = useLocaleState();
 
   const dataProvider = useDataProvider<CrmDataProvider>();
   const notify = useNotify();
@@ -68,13 +73,20 @@ export function SalesEdit() {
       }
       return dataProvider.salesUpdate(record.id, data);
     },
-    onSuccess: () => {
+    onSuccess: (_result, data) => {
       redirect("/sales");
       notify("resources.sales.edit.success", {
         messageArgs: {
           _: "User updated successfully",
         },
       });
+      if (
+        isSqlWebApi &&
+        record?.id === identity?.id &&
+        data.language !== undefined
+      ) {
+        setLocale(data.language || getInitialLocale());
+      }
     },
     onError: () => {
       notify("resources.sales.edit.error", {

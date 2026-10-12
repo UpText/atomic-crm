@@ -315,6 +315,7 @@ export const norwegianCrmMessages = {
         disabled: "Deaktivert",
       },
       create: {
+        success_sqlwebapi: "Brukeren er opprettet.",
         error: "Det oppstod en feil ved oppretting av brukeren.",
         success:
           "Brukeren er opprettet og mottar snart en e-post for å angi passord.",
@@ -552,6 +553,7 @@ export const norwegianCrmMessages = {
       system: "System",
     },
     language: "Språk",
+    language_browser_default: "Nettleserens språk",
     navigation: {
       label: "CRM-navigasjon",
     },

@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import {
+  CanAccess,
   useDataProvider,
   useNotify,
   useRedirect,
@@ -14,6 +15,14 @@ import type { TenantFormData } from "../types";
 import { TenantInputs } from "./TenantInputs";
 
 export function TenantCreate() {
+  return (
+    <CanAccess resource="tenants" action="create">
+      <TenantCreateContent />
+    </CanAccess>
+  );
+}
+
+function TenantCreateContent() {
   const dataProvider = useDataProvider<CrmDataProvider>();
   const notify = useNotify();
   const translate = useTranslate();

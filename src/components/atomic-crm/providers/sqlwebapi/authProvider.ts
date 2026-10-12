@@ -1,7 +1,11 @@
 // src/authProvider.ts
 
 import { canAccess } from "../commons/canAccess";
-import { clearStoredAuth, ensureValidStoredAuth } from "./token";
+import {
+  clearStoredAuth,
+  ensureValidStoredAuth,
+  getAuthenticatedTenant,
+} from "./token";
 import { getSqlWebApiService, getSqlWebApiUrl } from "./runtimeConfig";
 
 const ensureTrailingSlash = (url: string) =>
@@ -220,6 +224,9 @@ export const authProvider = {
   },
 
   async canAccess(params: any) {
+    if (params.resource === "tenants") {
+      return getAuthenticatedTenant() === "admin";
+    }
     ensureValidStoredAuth();
     const role = await this.getPermissions();
     return canAccess(role, params);

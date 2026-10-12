@@ -1,10 +1,17 @@
 CREATE PROCEDURE [crmapi].[tenants_post](
     @tenant NVARCHAR(255),
     @admin_email NVARCHAR(255),
-    @passwordHash NVARCHAR(256)
+    @passwordHash NVARCHAR(256),
+    @auth_tenant NVARCHAR(255) = NULL
 )
 AS
 BEGIN
+    IF @auth_tenant IS NULL OR @auth_tenant <> N'admin'
+    BEGIN
+        RAISERROR('Only admin tenant members can manage tenants.', 16, 1);
+        RETURN 403;
+    END
+
     SET NOCOUNT ON;
     SET XACT_ABORT ON;
 
