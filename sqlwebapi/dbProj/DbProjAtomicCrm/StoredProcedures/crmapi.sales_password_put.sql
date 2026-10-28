@@ -22,6 +22,12 @@ BEGIN
         RETURN 400;
     END
 
+   IF @IsAdmin = 1 AND @auth_tenant = 'demo'
+    BEGIN
+        RAISERROR('Cannot change password for demo tenant.', 16, 1);
+        RETURN 400;
+    END
+
     IF @passwordHash IS NULL OR @passwordHash NOT LIKE N'$argon2id$v=19$%'
     BEGIN
         RAISERROR('An Argon2id password hash is required.', 16, 1);

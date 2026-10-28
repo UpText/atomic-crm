@@ -449,7 +449,7 @@ export const norwegianCrmMessages = {
     },
     dashboard: {
       sqlwebapi_description:
-        "er et komplett CRM-system med SQL Server som database.",
+        "er et komplett CRM-system med SQL Server som database. Det tilbyr omfattende funksjoner for å administrere kunderelasjoner effektivt.",
       deals_chart: "Forventede salgsinntekter",
       deals_pipeline: "Salgspipeline",
       latest_activity: "Siste aktivitet",

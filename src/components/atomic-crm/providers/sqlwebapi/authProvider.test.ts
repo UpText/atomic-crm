@@ -71,6 +71,35 @@ describe("SQLWebAPI login", () => {
     );
     expect(localStorage.getItem("auth")).toBeNull();
   });
+
+  it("lands on the dashboard when switching from admin to demo", async () => {
+    const makeToken = (tenant: string) =>
+      `header.${btoa(JSON.stringify({ exp: 4102444800, tenant }))}.signature`;
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce(new Response(makeToken("admin")))
+        .mockResolvedValueOnce(Response.json([{ id: 1, administrator: true }]))
+        .mockResolvedValueOnce(new Response(makeToken("demo")))
+        .mockResolvedValueOnce(Response.json([{ id: 2, administrator: false }])),
+    );
+
+    await authProvider.login({ ...credentials, tenant: "admin" });
+    await expect(
+      authProvider.canAccess({ resource: "tenants", action: "list" }),
+    ).resolves.toBe(true);
+    await authProvider.logout();
+
+    await expect(
+      authProvider.login({ ...credentials, tenant: "demo" }),
+    ).resolves.toEqual({ redirectTo: "/" });
+    await expect(authProvider.checkAuth()).resolves.toBeUndefined();
+    await expect(
+      authProvider.canAccess({ resource: "tenants", action: "list" }),
+    ).resolves.toBe(false);
+    await expect(authProvider.getIdentity()).resolves.toMatchObject({ id: 2 });
+  });
 });
 
 describe("SQLWebAPI tenant access", () => {

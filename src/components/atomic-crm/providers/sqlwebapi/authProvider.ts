@@ -174,6 +174,9 @@ export const authProvider = {
         localStorage.removeItem(USER_STORAGE_KEY);
       }
     }
+
+    // A different tenant may not have access to the page visited before login.
+    return { redirectTo: "/" };
   },
 
   // Called on navigation to guard routes

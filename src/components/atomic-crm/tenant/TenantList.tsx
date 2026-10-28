@@ -2,6 +2,8 @@ import { CreateButton } from "@/components/admin/create-button";
 import { DataTable } from "@/components/admin/data-table";
 import { List } from "@/components/admin/list";
 import { SearchInput } from "@/components/admin/search-input";
+import { CanAccess } from "ra-core";
+import { Navigate } from "react-router";
 
 import { TopToolbar } from "../layout/TopToolbar";
 
@@ -14,6 +16,18 @@ const TenantListActions = () => (
 const filters = [<SearchInput source="q" alwaysOn />];
 
 export function TenantList() {
+  return (
+    <CanAccess
+      resource="tenants"
+      action="list"
+      accessDenied={<Navigate to="/" replace />}
+    >
+      <TenantListContent />
+    </CanAccess>
+  );
+}
+
+function TenantListContent() {
   return (
     <List
       filters={filters}
