@@ -17,6 +17,43 @@ describe("SQLWebAPI deletion", () => {
     vi.unstubAllGlobals();
   });
 
+  it.each([false, true])(
+    "returns tenant sync status (array response: %s)",
+    async (array) => {
+      const result = {
+        status: "ok",
+        companies_created: 1,
+        contacts_created: 2,
+        companies_synced: 3,
+        contacts_synced: 4,
+      };
+      const fetchMock = vi
+        .fn()
+        .mockResolvedValue(Response.json(array ? [result] : result));
+      vi.stubGlobal("fetch", fetchMock);
+      await expect(dataProvider.syncTenantAdmin()).resolves.toEqual(result);
+      expect(fetchMock.mock.calls[0][0]).toBe(
+        "http://localhost:8081/crmapi/sync-tenant-admin",
+      );
+      expect(fetchMock.mock.calls[0][1]).toMatchObject({
+        method: "POST",
+        body: "{}",
+      });
+    },
+  );
+
+  it("reports tenant sync failures", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(
+          Response.json({ message: "Forbidden" }, { status: 403 }),
+        ),
+    );
+    await expect(dataProvider.syncTenantAdmin()).rejects.toThrow("Forbidden");
+  });
+
   it.each(["create", "update"] as const)(
     "serializes contact emails and phones for %s without changing the form data",
     async (method) => {

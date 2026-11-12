@@ -320,6 +320,25 @@ const serializeDealContactIds = <T extends { data: { contact_ids?: unknown } }>(
 
 const dataProviderWithCustomMethods = {
   ...baseDataProvider,
+  async syncTenantAdmin(): Promise<{
+    status: string;
+    companies_created: number;
+    contacts_created: number;
+    companies_synced: number;
+    contacts_synced: number;
+  }> {
+    const url = buildSqlWebApiUrl("sync-tenant-admin");
+    if (!url) throw new Error("SQLWebAPI is not configured.");
+    const { json } = await httpClient(url, {
+      method: "POST",
+      body: JSON.stringify({}),
+    });
+    const result = Array.isArray(json) ? json[0] : json;
+    if (result?.status !== "ok") {
+      throw new Error("Tenant sync did not return a successful status.");
+    }
+    return result;
+  },
   async delete(resource: string, params: DeleteParams) {
     const response = await baseDataProvider.delete(resource, params);
     // SQLWebAPI can return 204 without the deleted record.

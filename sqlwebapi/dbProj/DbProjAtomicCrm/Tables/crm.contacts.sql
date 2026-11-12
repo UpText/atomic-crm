@@ -1,4 +1,5 @@
 CREATE TABLE [crm].[contacts] (
+    [source_sales_id] [int] NULL,
     [id] [int] IDENTITY(1,1) NOT NULL,
     [tenant] [nvarchar](255) NOT NULL CONSTRAINT [DF_contacts_tenant] DEFAULT ('default'),
     [first_name] [nvarchar](100) NOT NULL,

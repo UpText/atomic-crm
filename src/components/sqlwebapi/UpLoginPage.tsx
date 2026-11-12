@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useParams } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import type { FieldValues } from "react-hook-form";
 import { LoginPage } from "@/components/atomic-crm/login/LoginPage";
@@ -14,6 +15,7 @@ const REMEMBER_STORAGE_KEY = "up.login.remember";
 
 export const UpLoginPage = (props: UpLoginPageProps) => {
   const queryClient = useQueryClient();
+  const { tenant, email } = useParams<{ tenant?: string; email?: string }>();
   const defaultValues = useMemo<FieldValues>(() => {
     if (typeof window === "undefined") {
       return {};
@@ -21,14 +23,15 @@ export const UpLoginPage = (props: UpLoginPageProps) => {
 
     return {
       rememberMe: localStorage.getItem(REMEMBER_STORAGE_KEY) !== "false",
-      tenant: localStorage.getItem(TENANT_STORAGE_KEY) ?? "",
-      email: localStorage.getItem(EMAIL_STORAGE_KEY) ?? "",
+      tenant: tenant ?? localStorage.getItem(TENANT_STORAGE_KEY) ?? "",
+      email: email ?? localStorage.getItem(EMAIL_STORAGE_KEY) ?? "",
     };
-  }, []);
+  }, [tenant, email]);
 
   return (
     <LoginPage
       {...props}
+      key={JSON.stringify([tenant, email])}
       showTenantField
       defaultValues={defaultValues}
       additionalFields={

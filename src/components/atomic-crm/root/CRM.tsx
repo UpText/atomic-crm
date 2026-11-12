@@ -10,6 +10,7 @@ import { Route } from "react-router";
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
+import { UpLoginPage } from "@/components/sqlwebapi/UpLoginPage";
 import { Admin } from "@/components/admin/admin";
 import { ForgotPasswordPage } from "@/components/supabase/forgot-password-page";
 import { SetPasswordPage } from "@/components/supabase/set-password-page";
@@ -245,6 +246,9 @@ const DesktopAdmin = (
       {...props}
     >
       <CustomRoutes noLayout>
+        {hasSqlWebApiUrl() && (
+          <Route path="/login/:tenant/:email?" element={<UpLoginPage />} />
+        )}
         <Route path={SignupPage.path} element={<SignupPage />} />
         <Route
           path={ConfirmationRequired.path}
@@ -310,6 +314,9 @@ const MobileAdmin = (
         {...props}
       >
         <CustomRoutes noLayout>
+          {hasSqlWebApiUrl() && (
+            <Route path="/login/:tenant/:email?" element={<UpLoginPage />} />
+          )}
           <Route path={SignupPage.path} element={<SignupPage />} />
           <Route
             path={ConfirmationRequired.path}

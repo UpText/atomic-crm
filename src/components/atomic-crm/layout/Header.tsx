@@ -1,15 +1,20 @@
+import { useMutation } from "@tanstack/react-query";
+import type { CrmDataProvider } from "../providers/sqlwebapi/dataProvider";
 import {
   Building2,
   Download,
   FileText,
   Import,
   Settings,
+  RefreshCw,
   User,
   Users,
 } from "lucide-react";
 import {
   CanAccess,
   useNotify,
+  useDataProvider,
+  useRefresh,
   usePermissions,
   useTranslate,
   useUserMenu,
@@ -115,6 +120,7 @@ const Header = () => {
                       <TenantsMenu />
                     </CanAccess>
                   ) : null}
+                  {canManageTenants ? <SyncTenantAdminMenu /> : null}
                   <CanAccess resource="configuration" action="edit">
                     <SettingsMenu />
                   </CanAccess>
@@ -212,6 +218,42 @@ const TenantsMenu = () => {
         <Building2 />
         {translate("resources.tenants.name", { smart_count: 2 })}
       </Link>
+    </DropdownMenuItem>
+  );
+};
+
+const SyncTenantAdminMenu = () => {
+  const dataProvider = useDataProvider<CrmDataProvider>();
+  const notify = useNotify();
+  const refresh = useRefresh();
+  const translate = useTranslate();
+  const { mutate, isPending } = useMutation({
+    mutationFn: () => dataProvider.syncTenantAdmin(),
+    onSuccess: (result) => {
+      refresh();
+      notify(
+        `Sync complete: ${result.companies_synced} customers (${result.companies_created} new), ${result.contacts_synced} contacts (${result.contacts_created} new).`,
+        { type: "success", autoHideDuration: 10000 },
+      );
+    },
+    onError: (error) => notify(error.message, { type: "error" }),
+  });
+  return (
+    <DropdownMenuItem
+      disabled={isPending}
+      onSelect={(event) => {
+        event.preventDefault();
+        mutate();
+      }}
+      className="flex items-center gap-2"
+    >
+      <RefreshCw className={isPending ? "animate-spin" : undefined} />
+      {translate(
+        isPending ? "crm.header.syncing_tenants" : "crm.header.sync_tenants",
+        {
+          _: isPending ? "Syncing tenants…" : "Sync tenants to customers",
+        },
+      )}
     </DropdownMenuItem>
   );
 };

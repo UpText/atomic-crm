@@ -1,4 +1,5 @@
 CREATE TABLE [crm].[companies] (
+    [source_tenant] [nvarchar](255) NULL,
     [id] [int] IDENTITY(1,1) NOT NULL,
     [tenant] [nvarchar](255) NOT NULL CONSTRAINT [DF_companies_tenant] DEFAULT ('default'),
     [name] [nvarchar](200) NOT NULL,
