@@ -5,6 +5,8 @@ import type { FieldValues } from "react-hook-form";
 import { LoginPage } from "@/components/atomic-crm/login/LoginPage";
 import { BooleanInput } from "@/components/admin/boolean-input";
 
+import { EntraSignInButton } from "./EntraSignInButton";
+
 type UpLoginPageProps = {
   redirectTo?: string;
 };
@@ -34,12 +36,15 @@ export const UpLoginPage = (props: UpLoginPageProps) => {
       key={JSON.stringify([tenant, email])}
       showTenantField
       defaultValues={defaultValues}
+      tenantFields={<EntraSignInButton />}
       additionalFields={
-        <BooleanInput
-          source="rememberMe"
-          label="Remember tenant and email"
-          helperText={false}
-        />
+        <>
+          <BooleanInput
+            source="rememberMe"
+            label="Remember tenant and email"
+            helperText={false}
+          />
+        </>
       }
       onLoginSuccess={() =>
         queryClient.invalidateQueries({

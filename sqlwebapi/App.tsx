@@ -7,31 +7,52 @@ import {
 } from "@/components/atomic-crm/providers/sqlwebapi";
 import { UpLoginPage } from "@/components/sqlwebapi/UpLoginPage";
 
-const App = () => (
-  <CRM
-    dataProvider={dataProvider}
-    authProvider={authProvider}
-    loginPage={UpLoginPage}
-    dashboard={() => (
-      <Dashboard
-        welcome={{
-          title: "UpTextCrm",
-          children: (
-            <p className="text-sm">
-              <a
-                href="https://www.uptext.com"
-                className="underline hover:no-underline"
-              >
-                UpTextCrm
-              </a>{" "}
-              <WelcomeDescription />
-            </p>
-          ),
-        }}
+import { CRMPageOverridesContext } from "@/components/atomic-crm/root/CRMPageOverridesContext";
+import {
+  SqlWebApiSettingsPage,
+  SqlWebApiMobileSettingsPage,
+} from "@/components/sqlwebapi/SqlWebApiSettingsPage";
+import { EntraCallback } from "@/components/sqlwebapi/EntraCallback";
+
+const callbackParams = new URLSearchParams(window.location.search);
+const callbackCode = callbackParams.get("entra_code");
+const callbackError = callbackParams.get("entra_error");
+const App = () =>
+  callbackCode || callbackError ? (
+    <EntraCallback code={callbackCode} error={callbackError} />
+  ) : (
+    <CRMPageOverridesContext.Provider
+      value={{
+        settingsPage: SqlWebApiSettingsPage,
+        mobileSettingsPage: SqlWebApiMobileSettingsPage,
+        tenantLoginPage: UpLoginPage,
+      }}
+    >
+      <CRM
+        dataProvider={dataProvider}
+        authProvider={authProvider}
+        loginPage={UpLoginPage}
+        dashboard={() => (
+          <Dashboard
+            welcome={{
+              title: "UpTextCrm",
+              children: (
+                <p className="text-sm">
+                  <a
+                    href="https://www.uptext.com"
+                    className="underline hover:no-underline"
+                  >
+                    UpTextCrm
+                  </a>{" "}
+                  <WelcomeDescription />
+                </p>
+              ),
+            }}
+          />
+        )}
       />
-    )}
-  />
-);
+    </CRMPageOverridesContext.Provider>
+  );
 
 const WelcomeDescription = () => {
   const translate = useTranslate();

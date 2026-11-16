@@ -5,12 +5,12 @@ import type {
   LayoutComponent,
 } from "ra-core";
 import { CustomRoutes, localStorageStore, Resource } from "ra-core";
-import { useEffect, useMemo } from "react";
+import { useContext, useEffect, useMemo } from "react";
+import { CRMPageOverridesContext } from "./CRMPageOverridesContext";
 import { Route } from "react-router";
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
-import { UpLoginPage } from "@/components/sqlwebapi/UpLoginPage";
 import { Admin } from "@/components/admin/admin";
 import { ForgotPasswordPage } from "@/components/supabase/forgot-password-page";
 import { SetPasswordPage } from "@/components/supabase/set-password-page";
@@ -239,6 +239,10 @@ const DesktopAdmin = (
   },
 ) => {
   const isSqlWebApi = hasSqlWebApiUrl();
+  const {
+    settingsPage: SettingsComponent = SettingsPage,
+    tenantLoginPage: TenantLogin,
+  } = useContext(CRMPageOverridesContext);
   return (
     <Admin
       layout={props.layout ?? Layout}
@@ -246,8 +250,8 @@ const DesktopAdmin = (
       {...props}
     >
       <CustomRoutes noLayout>
-        {hasSqlWebApiUrl() && (
-          <Route path="/login/:tenant/:email?" element={<UpLoginPage />} />
+        {TenantLogin && (
+          <Route path="/login/:tenant/:email?" element={<TenantLogin />} />
         )}
         <Route path={SignupPage.path} element={<SignupPage />} />
         <Route
@@ -264,7 +268,7 @@ const DesktopAdmin = (
 
       <CustomRoutes>
         <Route path={ProfilePage.path} element={<ProfilePage />} />
-        <Route path={SettingsPage.path} element={<SettingsPage />} />
+        <Route path={SettingsPage.path} element={<SettingsComponent />} />
         <Route path={ImportPage.path} element={<ImportPage />} />
         <Route path={ChangelogPage.path} element={<ChangelogPage />} />
       </CustomRoutes>
@@ -287,6 +291,11 @@ const MobileAdmin = (
     layout?: LayoutComponent;
   },
 ) => {
+  const {
+    settingsPage: TenantSettings,
+    mobileSettingsPage: MobileSettings = SettingsPageMobile,
+    tenantLoginPage: TenantLogin,
+  } = useContext(CRMPageOverridesContext);
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -314,8 +323,8 @@ const MobileAdmin = (
         {...props}
       >
         <CustomRoutes noLayout>
-          {hasSqlWebApiUrl() && (
-            <Route path="/login/:tenant/:email?" element={<UpLoginPage />} />
+          {TenantLogin && (
+            <Route path="/login/:tenant/:email?" element={<TenantLogin />} />
           )}
           <Route path={SignupPage.path} element={<SignupPage />} />
           <Route
@@ -330,10 +339,10 @@ const MobileAdmin = (
           <Route path={OAuthConsentPage.path} element={<OAuthConsentPage />} />
         </CustomRoutes>
         <CustomRoutes>
-          <Route
-            path={SettingsPageMobile.path}
-            element={<SettingsPageMobile />}
-          />
+          <Route path={SettingsPageMobile.path} element={<MobileSettings />} />
+          {TenantSettings && (
+            <Route path="/tenant-settings" element={<TenantSettings />} />
+          )}
           <Route path={ChangelogPage.path} element={<ChangelogPage />} />
         </CustomRoutes>
         <Resource

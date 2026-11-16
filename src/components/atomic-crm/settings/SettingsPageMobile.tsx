@@ -91,7 +91,9 @@ const ChangePasswordButton = () => {
   );
 };
 
-export const SettingsPageMobile = () => {
+export const SettingsPageMobile = ({
+  additionalSections,
+}: { additionalSections?: React.ReactNode } = {}) => {
   const translate = useTranslate();
   const authProvider = useAuthProvider();
   const logout = useLogout();
@@ -111,6 +113,7 @@ export const SettingsPageMobile = () => {
           <div className="space-y-6">
             <ProfileSection />
             <PreferencesSection />
+            {additionalSections}
             <InboundEmailSection />
             {!isSqlWebApi && <McpServerSection />}
             <AboutSection />

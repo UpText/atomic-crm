@@ -136,7 +136,8 @@ BEGIN
     )
     BEGIN
         SET @service_user_sql =
-            N'GRANT EXECUTE ON SCHEMA::[crmapi] TO ' + QUOTENAME(@service_user_name) + N';';
+            N'GRANT EXECUTE ON SCHEMA::[crmapi] TO ' + QUOTENAME(@service_user_name) + N';' +
+            N'GRANT EXECUTE ON SCHEMA::[crmauth] TO ' + QUOTENAME(@service_user_name) + N';';
 
         EXEC (@service_user_sql);
     END;

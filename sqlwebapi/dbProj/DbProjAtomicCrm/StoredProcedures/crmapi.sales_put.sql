@@ -7,9 +7,13 @@ CREATE PROCEDURE [crmapi].[sales_put](
     @administrator bit = NULL,
     @disabled bit = NULL,
     @avatar nvarchar(max) = NULL,
-    @auth_tenant NVARCHAR(255) = NULL
+    @auth_tenant NVARCHAR(255) = NULL,
+    @auth_id int = NULL
 ) AS
 BEGIN
+    IF NOT EXISTS (SELECT 1 FROM crm.sales WHERE tenant=@auth_tenant AND id=@auth_id AND disabled=0
+        AND (administrator=1 OR (id=TRY_CONVERT(int,@ID) AND (@administrator IS NULL OR @administrator=administrator))))
+        RETURN 403;
     IF NOT EXISTS(SELECT 1 FROM crm.sales WHERE id = @ID AND tenant = @auth_tenant)
     BEGIN
         RAISERROR('Unknown sales', 1, 1);

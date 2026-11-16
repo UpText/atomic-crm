@@ -15,6 +15,7 @@ CREATE TABLE [crm].[sales] (
     [created_at] [datetime2](0) NOT NULL CONSTRAINT [DF_sales_created_at] DEFAULT (sysutcdatetime()),
     [updated_at] [datetime2](0) NOT NULL CONSTRAINT [DF_sales_updated_at] DEFAULT (sysutcdatetime()),
     [PasswordHash] [nvarchar](256) NULL,
+    CONSTRAINT [UQ_sales_tenant_id] UNIQUE ([tenant], [id]),
     CONSTRAINT [PK_sales] PRIMARY KEY CLUSTERED ([id] ASC),
     CONSTRAINT [UQ_sales_email] UNIQUE NONCLUSTERED ([tenant] ASC, [email] ASC),
     CONSTRAINT [FK_sales_tenant] FOREIGN KEY ([tenant]) REFERENCES [crm].[tenants] ([name])
