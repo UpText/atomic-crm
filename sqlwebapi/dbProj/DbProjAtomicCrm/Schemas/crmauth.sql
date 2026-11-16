@@ -1,0 +1,1 @@
+CREATE SCHEMA [crmauth] AUTHORIZATION [dbo];

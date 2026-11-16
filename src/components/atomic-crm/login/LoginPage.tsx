@@ -29,6 +29,7 @@ type LoginPageProps = {
   defaultValues?: FieldValues;
   transformSubmitValues?: (values: FieldValues) => FieldValues;
   additionalFields?: ReactNode;
+  tenantFields?: ReactNode;
   onLoginSuccess?: () => void | Promise<void>;
 };
 
@@ -40,6 +41,7 @@ export const LoginPage = (props: LoginPageProps) => {
     defaultValues,
     transformSubmitValues,
     additionalFields,
+    tenantFields,
     onLoginSuccess,
   } = props;
   const [loading, setLoading] = useState(false);
@@ -152,6 +154,7 @@ export const LoginPage = (props: LoginPageProps) => {
                     onKeyDown={handleEnterSubmit}
                   />
                 ) : null}
+                {tenantFields}
                 <TextInput
                   label="ra.auth.email"
                   source="email"

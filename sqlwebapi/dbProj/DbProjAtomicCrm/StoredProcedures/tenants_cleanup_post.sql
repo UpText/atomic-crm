@@ -32,6 +32,7 @@ BEGIN
     DELETE FROM crm.tags WHERE tenant = @ID;
     DELETE FROM crm.objects WHERE tenant = @ID;
     DELETE FROM crm.buckets WHERE tenant = @ID;
+    DELETE FROM crm.external_identities WHERE tenant = @ID;
     DELETE FROM crm.sales WHERE tenant = @ID;
 
 

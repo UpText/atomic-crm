@@ -139,3 +139,7 @@ The Registry file is kept au to date when files are added or removed:
 ## License
 
 This project is licensed under the MIT License, courtesy of [Marmelab](https://marmelab.com). See the [LICENSE.md](./LICENSE.md) file for details.
+
+## Microsoft Entra login
+
+See [Entra login setup](sqlwebapi/ENTRA_LOGIN.md) for tenant-admin settings, invite-only provisioning, and deployment prerequisites.

@@ -9,7 +9,8 @@ import {
   useNotify,
   useTranslate,
 } from "ra-core";
-import { useCallback, useMemo } from "react";
+import { useCallback, useContext, useMemo } from "react";
+import { SettingsExtensionContext } from "./SettingsExtensionContext";
 import { useFormContext } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -132,6 +133,7 @@ const transformFormValues = (data: Record<string, any>) => ({
 });
 
 export const SettingsPage = () => {
+  const extension = useContext(SettingsExtensionContext);
   const updateConfiguration = useConfigurationUpdater();
   const notify = useNotify();
 
@@ -141,7 +143,12 @@ export const SettingsPage = () => {
       id={1}
       mutationMode="pessimistic"
       redirect={false}
-      transform={transformFormValues}
+      transform={(data) => ({
+        config: {
+          ...transformFormValues(data).config,
+          ...extension.transform?.(data),
+        },
+      })}
       mutationOptions={{
         onSuccess: (data: any) => {
           updateConfiguration(data.config);
@@ -162,6 +169,7 @@ export const SettingsPage = () => {
 SettingsPage.path = "/settings";
 
 const SettingsForm = () => {
+  const extension = useContext(SettingsExtensionContext);
   const config = useConfigurationContext();
 
   const defaultValues = useMemo(
@@ -176,8 +184,9 @@ const SettingsForm = () => {
       dealStages: config.dealStages,
       dealPipelineStatuses: config.dealPipelineStatuses,
       noteStatuses: config.noteStatuses,
+      ...extension.defaults?.(config),
     }),
-    [config],
+    [config, extension],
   );
 
   return (
@@ -188,6 +197,7 @@ const SettingsForm = () => {
 };
 
 const SettingsFormFields = () => {
+  const extension = useContext(SettingsExtensionContext);
   const translate = useTranslate();
   const currencyChoices = useMemo(() => getCurrencyChoices(), []);
   const {
@@ -252,7 +262,7 @@ const SettingsFormFields = () => {
           <h1 className="text-2xl font-semibold px-3 mb-2">
             {translate("crm.settings.title")}
           </h1>
-          {SECTIONS.map((section) => (
+          {[...SECTIONS, ...(extension.sections ?? [])].map((section) => (
             <button
               key={section.id}
               type="button"
@@ -263,7 +273,10 @@ const SettingsFormFields = () => {
               }}
               className="block w-full text-left px-3 py-1 text-sm rounded-md hover:text-foreground hover:bg-muted transition-colors"
             >
-              {translate(section.label, { smart_count: 2 })}
+              {translate(section.label, {
+                smart_count: 2,
+                _: section.fallback,
+              })}
             </button>
           ))}
         </div>
@@ -306,6 +319,8 @@ const SettingsFormFields = () => {
             </div>
           </CardContent>
         </Card>
+
+        {extension.fields}
 
         {/* Companies */}
         <Card id="companies">
@@ -475,6 +490,7 @@ const SettingsFormFields = () => {
               onClick={() =>
                 reset({
                   ...defaultConfiguration,
+                  ...extension.preserveOnReset?.(watch()),
                   lightModeLogo: {
                     src: defaultConfiguration.lightModeLogo,
                   },

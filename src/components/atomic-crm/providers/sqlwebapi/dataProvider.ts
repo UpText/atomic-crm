@@ -1,3 +1,4 @@
+import { entraRequest } from "./entra";
 import { fetchUtils, HttpError } from "ra-core";
 
 import simpleRestProvider from "ra-data-simple-rest";
@@ -608,6 +609,25 @@ const dataProviderWithCustomMethods = {
   },
   async isInitialized() {
     return getIsInitialized();
+  },
+  async getEntraInvitations() {
+    return entraRequest("invitations");
+  },
+  async inviteEntraUser(invite: {
+    objectId: string;
+    email: string;
+    salesId: number | null;
+  }) {
+    return entraRequest("invitations", {
+      method: "POST",
+      body: JSON.stringify(invite),
+    });
+  },
+  async revokeEntraIdentity(objectId: string, directoryId: string) {
+    return entraRequest(
+      `invitations/${encodeURIComponent(objectId)}?directoryId=${encodeURIComponent(directoryId)}`,
+      { method: "DELETE" },
+    );
   },
   async getConfiguration(): Promise<ConfigurationContextValue> {
     const { data } = await baseDataProvider.getOne("configuration", { id: 1 });
