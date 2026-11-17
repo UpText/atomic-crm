@@ -100,6 +100,21 @@ EXEC @status=crmapi.sales_put @ID='2',@first_name='Profile',@auth_id=2,@auth_ten
 IF @status<>200 THROW 50999,'Self-service profile edit regressed.',1;
 GO
 '''
+
+ # Consent completion rechecks tenant/admin and rejects stale settings atomically.
+ connection=f"EXEC crmauth.connection_post @tenant='a',@actor=1,@expectedConfig=N'{config}',@directoryId='{directory}',@clientId='{client}',@clientSecretUri='https://uptextsecrets.vault.azure.net/secrets/shared';"
+ setup+=deny(connection.replace('@actor=1','@actor=2'),50001)
+ setup+=deny(connection.replace('@actor=1','@actor=3'),50001)
+ setup+=deny(connection,50005)  # Earlier policy edits made the snapshot stale.
+ setup+=f"UPDATE crm.configuration SET config=N'{config}' WHERE tenant='a';\nGO\n"
+ setup+=connection+'\nGO\n'
+ setup+=f"""IF JSON_VALUE((SELECT config FROM crm.configuration WHERE tenant='a' AND id=1),'$.authentication.entra.clientSecretUri')<>'https://uptextsecrets.vault.azure.net/secrets/shared' THROW 50999,'Consent connection not saved.',1;
+IF JSON_VALUE((SELECT config FROM crm.configuration WHERE tenant='a' AND id=1),'$.authentication.entra.provisioningMode')<>'invite_only' THROW 50999,'Consent default policy incorrect.',1;
+IF (SELECT config FROM crm.configuration WHERE tenant='b' AND id=1)<>N'{config}' THROW 50999,'Other CRM tenant modified.',1;
+IF EXISTS (SELECT 1 FROM crm.sales WHERE tenant='a' AND email<>'admin@a.test' AND administrator=1) THROW 50999,'Consent changed roles.',1;
+GO
+"""
+ setup+=deny(connection,50005)  # A consumed snapshot cannot overwrite newer settings.
  execute(setup)
  print('PASS: invite-only default, admin authorization, cross-tenant isolation, directory validation, expiry, activation, revocation, automatic standard-user provisioning, safe account linking, disabled users, configuration authorization, role escalation self-service profile edits, Entra name creation/backfill and preservation of CRM-edited names.')
 finally:

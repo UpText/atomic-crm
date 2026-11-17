@@ -14,11 +14,17 @@ import {
 } from "@/components/sqlwebapi/SqlWebApiSettingsPage";
 import { EntraCallback } from "@/components/sqlwebapi/EntraCallback";
 
+import { EntraConnectionCallback } from "@/components/sqlwebapi/EntraConnectionCallback";
+
 const callbackParams = new URLSearchParams(window.location.search);
 const callbackCode = callbackParams.get("entra_code");
 const callbackError = callbackParams.get("entra_error");
+const connectionCode = callbackParams.get("entra_connection");
+const connectionError = callbackParams.get("entra_connection_error");
 const App = () =>
-  callbackCode || callbackError ? (
+  connectionCode || connectionError ? (
+    <EntraConnectionCallback code={connectionCode} error={connectionError} />
+  ) : callbackCode || callbackError ? (
     <EntraCallback code={callbackCode} error={callbackError} />
   ) : (
     <CRMPageOverridesContext.Provider

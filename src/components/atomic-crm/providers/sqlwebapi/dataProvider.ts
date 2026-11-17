@@ -1,4 +1,4 @@
-import { entraRequest } from "./entra";
+import { entraRequest, startEntraConnection } from "./entra";
 import { fetchUtils, HttpError } from "ra-core";
 
 import simpleRestProvider from "ra-data-simple-rest";
@@ -609,6 +609,12 @@ const dataProviderWithCustomMethods = {
   },
   async isInitialized() {
     return getIsInitialized();
+  },
+  async getEntraConnectionOptions(): Promise<{ available: boolean }> {
+    return entraRequest("onboarding/options");
+  },
+  async connectEntraOrganization() {
+    return startEntraConnection();
   },
   async getEntraInvitations() {
     return entraRequest("invitations");

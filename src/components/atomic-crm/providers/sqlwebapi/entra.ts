@@ -109,3 +109,53 @@ export const completeEntraLogin = async (code: string) => {
   localStorage.setItem("tenant", auth.tenant);
   localStorage.setItem("user", JSON.stringify(auth.user));
 };
+
+export const startEntraConnection = async () => {
+  const auth = getStoredAuth();
+  if (!auth?.token || !auth.tenant)
+    throw new Error("Sign in as a tenant administrator first.");
+  const verifier = base64Url(crypto.getRandomValues(new Uint8Array(32)));
+  const challenge = base64Url(
+    new Uint8Array(
+      await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier)),
+    ),
+  );
+  sessionStorage.setItem(
+    "up.entra.connection",
+    JSON.stringify({ verifier, tenant: auth.tenant, created: Date.now() }),
+  );
+  const result = await entraRequest("onboarding/start", {
+    method: "POST",
+    body: JSON.stringify({
+      returnUri: window.location.origin + window.location.pathname,
+      challenge,
+    }),
+  });
+  const url = new URL(result.url);
+  if (
+    url.origin !== buildEntraUrl("onboarding/launch").origin ||
+    url.pathname !== buildEntraUrl("onboarding/launch").pathname
+  )
+    throw new Error("Invalid Microsoft connection URL.");
+  window.location.assign(url);
+};
+
+export const completeEntraConnection = async (
+  code: string,
+): Promise<{ directoryId: string; objectId: string }> => {
+  const raw = sessionStorage.getItem("up.entra.connection");
+  sessionStorage.removeItem("up.entra.connection");
+  const transaction = raw ? JSON.parse(raw) : null;
+  if (
+    !transaction?.verifier ||
+    transaction.tenant !== getStoredAuth()?.tenant ||
+    Date.now() - transaction.created > 17 * 60 * 1000
+  )
+    throw new Error(
+      "Connection expired or your CRM tenant changed. Restart from tenant settings.",
+    );
+  return entraRequest("onboarding/complete", {
+    method: "POST",
+    body: JSON.stringify({ code, verifier: transaction.verifier }),
+  });
+};
