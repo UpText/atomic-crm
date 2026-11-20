@@ -3,6 +3,7 @@ import { getStoredAuth, clearStoredAuth } from "./token";
 
 export type EntraSettings = {
   enabled: boolean;
+  organizationDisplayName: string;
   directoryId: string;
   clientId: string;
   clientSecretUri: string;
@@ -10,6 +11,7 @@ export type EntraSettings = {
 };
 export const defaultEntraSettings: EntraSettings = {
   enabled: false,
+  organizationDisplayName: "",
   directoryId: "",
   clientId: "",
   clientSecretUri: "",

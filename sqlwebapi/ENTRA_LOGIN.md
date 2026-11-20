@@ -5,6 +5,7 @@ Tenant-admin editable provider settings are stored inside `crm.configuration.con
 ```json
 {
   "enabled": false,
+  "organizationDisplayName": "UpText",
   "directoryId": "f05141e7-a3c7-4c6d-815e-4e98c8a70fd4",
   "clientId": "65cde3da-eada-4331-a6f8-c4dfdadb96da",
   "clientSecretUri": "https://uptextsecrets.vault.azure.net/secrets/uptext-crm-login-client-secret",
@@ -13,6 +14,8 @@ Tenant-admin editable provider settings are stored inside `crm.configuration.con
 ```
 
 Open **Settings → Microsoft Entra login** to edit these settings and manage invitations. Mobile administrators use **Tenant settings and Entra login**. Never paste a secret value into CRM; provide an approved Key Vault URI only. Server checks enforce administrator permission.
+
+Set **Organization display name** to label the login button **Sign in with {organization name}**. A blank name falls back to **Sign in with Microsoft**. The name is public login-page text returned by the API options endpoint; deploy the updated API and frontend together to enable it.
 
 Invite-only is the default. An administrator enters the user's Entra object ID and email, optionally supplying an existing CRM user ID to explicitly link the account. Otherwise a standard CRM user without a local password is created. Invitations must be used within seven days. Share the CRM address and tenant name with the user; this workflow does not send email. Users enter the CRM tenant before clicking **Sign in with Microsoft**. Revocation is available in the identity list.
 

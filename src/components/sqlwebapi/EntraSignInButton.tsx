@@ -20,10 +20,14 @@ export function EntraSignInButton() {
       url.searchParams.set("tenant", tenant);
       const response = await fetch(url, { signal });
       if (!response.ok) return { enabled: false };
-      return response.json() as Promise<{ enabled: boolean }>;
+      return response.json() as Promise<{
+        enabled: boolean;
+        organizationDisplayName?: string;
+      }>;
     },
   });
   if (!data?.enabled) return null;
+  const organizationName = data.organizationDisplayName?.trim();
   return (
     <div className="space-y-2">
       <Button
@@ -46,7 +50,15 @@ export function EntraSignInButton() {
           }
         }}
       >
-        {pending ? "Opening Microsoft…" : "Sign in with Microsoft"}
+        <svg viewBox="0 0 21 21" aria-hidden="true" className="size-4 shrink-0">
+          <path fill="#f25022" d="M0 0h10v10H0z" />
+          <path fill="#7fba00" d="M11 0h10v10H11z" />
+          <path fill="#00a4ef" d="M0 11h10v10H0z" />
+          <path fill="#ffb900" d="M11 11h10v10H11z" />
+        </svg>
+        {pending
+          ? "Opening Microsoft…"
+          : `Sign in with ${organizationName || "Microsoft"}`}
       </Button>
       {error && (
         <p role="alert" className="text-sm text-destructive">

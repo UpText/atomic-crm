@@ -15,6 +15,11 @@ export function EntraSettingsFields() {
           source="authentication.entra.enabled"
           label="Enable Microsoft login"
         />
+        <TextInput
+          source="authentication.entra.organizationDisplayName"
+          label="Organization display name"
+          helperText="Shown as “Sign in with {organization name}”. Leave blank to use “Sign in with Microsoft”."
+        />
         <details className="space-y-3">
           <summary className="cursor-pointer">
             Advanced: use your own app registration
